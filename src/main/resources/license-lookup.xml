@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<license-lookup xmlns="http://developer.jasig.org/schemas/notice/license-lookup.xsd"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://developer.jasig.org/schemas/notice/license-lookup.xsd license-lookup.xsd">
+  <artifact>
+    <groupId></groupId>
+    <artifactId></artifactId>
+    <version></version>
+  </artifact>
+</license-lookup>
