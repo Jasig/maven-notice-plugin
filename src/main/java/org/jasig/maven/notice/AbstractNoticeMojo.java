@@ -56,6 +56,9 @@ import org.jasig.maven.notice.util.ResourceFinder;
 /**
  * Common base mojo for notice related plugins
  * 
+ * TODO multi-module projects & aggregation of notice files
+ * TODO ability to exclude specified modules in multi-module project?
+ * 
  * @author Eric Dalquist
  * @version $Revision$
  */

@@ -26,16 +26,20 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.jasig.maven.notice.util.ResourceFinder;
 
+import difflib.Chunk;
+import difflib.DeleteDelta;
+import difflib.Delta;
 import difflib.DiffUtils;
+import difflib.InsertDelta;
 import difflib.Patch;
+import edu.emory.mathcs.backport.java.util.LinkedList;
 
 /**
- * Checks the NOTICE file
+ * Checks the NOTICE file to make sure it matches the expected output
  * 
  * @author Eric Dalquist
  * @version $Revision$
@@ -50,10 +54,12 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
         //Write out the generated notice file
         final File outputFile = getNoticeOutputFile();
 
+        //Make sure the existing NOTICE file exists
         if (!outputFile.exists()) {
             throw new MojoFailureException("No NOTICE file exists at: " + outputFile);
         }
         
+        //Load up the existing NOTICE file
         final String existingNoticeContents;
         try {
             existingNoticeContents = FileUtils.readFileToString(outputFile, this.encoding);
@@ -64,18 +70,7 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
         
         //Check if the notice files match
         if (!noticeContents.equals(existingNoticeContents)) {
-            String diffStr = "";
-            try {
-                final List expectedLines = IOUtils.readLines(new StringReader(noticeContents));
-                final List existingLines = IOUtils.readLines(new StringReader(existingNoticeContents));
-                final Patch diff = DiffUtils.diff(expectedLines, existingLines);
-                diffStr = diff.getDeltas().toString();
-            }
-            catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-            
+            final String diffText = this.generateDiff(logger, noticeContents, existingNoticeContents);
                 
             final String buildDir = project.getBuild().getDirectory();
             final File expectedNoticeFile = new File(new File(buildDir), "NOTICE.expected");
@@ -87,11 +82,53 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
             }
             
             final String msg = "Existing NOTICE file '" + outputFile + "' doesn't match expected NOTICE file: " + expectedNoticeFile;
-            logger.error(msg);
-            logger.error(diffStr);
+            logger.error(msg + "\n" + diffText);
             throw new MojoFailureException(msg);
         }
         
         logger.info("NOTICE file is up to date");
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected String generateDiff(Log logger, String noticeContents, final String existingNoticeContents) {
+        final StringBuilder diffText = new StringBuilder();
+        try {
+            final List<?> expectedLines = IOUtils.readLines(new StringReader(noticeContents));
+            final List<?> existingLines = IOUtils.readLines(new StringReader(existingNoticeContents));
+            final Patch diff = DiffUtils.diff(expectedLines, existingLines);
+            
+            for (final Delta delta : diff.getDeltas()) {
+                final Chunk original = delta.getOriginal();
+                final Chunk revised = delta.getRevised();
+                
+                char changeType = '?';
+                char changeDirection = '?'; 
+                List lines;
+                if (delta instanceof DeleteDelta) {
+                    changeType = 'd';
+                    changeDirection = '<';
+                    lines = original.getLines();
+                }
+                else if (delta instanceof InsertDelta) {
+                    changeType = 'a';
+                    changeDirection = '>';
+                    lines = revised.getLines();
+                }
+                else {
+                    lines = new LinkedList();
+                    lines.addAll(original.getLines());
+                    lines.addAll(revised.getLines());
+                }
+                
+                diffText.append(original.getPosition()).append(changeType).append(revised.getPosition()).append("\n");
+                for (final Object line : lines) {
+                    diffText.append(changeDirection).append(" ").append(line).append("\n");
+                }
+            }
+        }
+        catch (IOException e) {
+            logger.warn("Failed to generate diff between existing and expected NOTICE files", e);
+        }
+        return diffText.toString();
     }
 }
