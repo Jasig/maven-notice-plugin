@@ -17,7 +17,6 @@ under the License.
 
 This project includes:
   Backport of JSR 166 under Public Domain
-  bcel under Apache License, Version 2
   classworlds under BSD Style License
   CLI under Apache License, Version 2
   Commons IO under The Apache Software License, Version 2.0

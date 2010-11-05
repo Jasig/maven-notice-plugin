@@ -127,8 +127,7 @@ public class LicenseLookupHelper {
 
     protected LicenseLookup loadLicenseLookup(Unmarshaller unmarshaller, String licenseLookupFile) throws MojoFailureException {
         final URL licenseLookupUrl = resourceFinder.findResource(licenseLookupFile);
-        
-        logger.debug("Loading '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'");
+        logger.info("Loading license lookup mappings from '" + licenseLookupUrl + "'");
 
         InputStream lookupStream = null;
         try {
