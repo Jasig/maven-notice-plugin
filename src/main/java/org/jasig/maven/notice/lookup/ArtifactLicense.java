@@ -58,7 +58,7 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
  *       &lt;sequence>
  *         &lt;element name="groupId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="artifactId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="version" type="{http://developer.jasig.org/schemas/notice/license-lookup.xsd}mappedVersion" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="version" type="{https://source.jasig.org/schemas/maven-notice-plugin/license-lookup}mappedVersion" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="license" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>

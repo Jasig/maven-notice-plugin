@@ -229,10 +229,11 @@ public class GenerateNoticeMojo extends AbstractMojo {
             logger.error("Try adding them to a 'licenseLookup' file.");
             
             final Marshaller marshaller = LicenseLookupContext.getMarshaller();
-            final File mappingsfile = new File(project.getBasedir(), "license-mappings.xml");
+            final String buildDir = project.getBuild().getDirectory();
+            final File mappingsfile = new File(new File(buildDir), "license-mappings.xml");
             try {
                 marshaller.marshal(licenseLookup, mappingsfile);
-                logger.error("A stub license mapping file has been written to:" + mappingsfile);
+                logger.error("A stub license mapping file has been written to: " + mappingsfile);
             }
             catch (JAXBException e) {
                 logger.warn("Failed to write stub license-mappings.xml file to: " + mappingsfile, e);

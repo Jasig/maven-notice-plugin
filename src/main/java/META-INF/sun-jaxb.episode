@@ -8,7 +8,7 @@ Any modifications to this file will be lost upon recompilation of the source sch
 Generated on: 2010.11.05 at 11:43:16 AM CDT 
 
   -->
-  <bindings scd="x-schema::tns" xmlns:tns="http://developer.jasig.org/schemas/notice/license-lookup.xsd">
+  <bindings scd="x-schema::tns" xmlns:tns="https://source.jasig.org/schemas/maven-notice-plugin/license-lookup">
     <schemaBindings map="false"/>
     <bindings scd="~tns:artifactLicense">
       <class ref="org.jasig.maven.notice.lookup.ArtifactLicense"/>

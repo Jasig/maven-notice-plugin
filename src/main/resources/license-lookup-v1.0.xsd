@@ -21,8 +21,8 @@
 -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns="http://developer.jasig.org/schemas/notice/license-lookup.xsd"
-    targetNamespace="http://developer.jasig.org/schemas/notice/license-lookup.xsd"
+    xmlns="https://source.jasig.org/schemas/maven-notice-plugin/license-lookup"
+    targetNamespace="https://source.jasig.org/schemas/maven-notice-plugin/license-lookup"
     elementFormDefault="qualified">
 
     <xs:element name="license-lookup">

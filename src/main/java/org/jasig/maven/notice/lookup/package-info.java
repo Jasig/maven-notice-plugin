@@ -24,5 +24,5 @@
 // Generated on: 2010.11.05 at 11:43:16 AM CDT 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://developer.jasig.org/schemas/notice/license-lookup.xsd", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@javax.xml.bind.annotation.XmlSchema(namespace = "https://source.jasig.org/schemas/maven-notice-plugin/license-lookup", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.jasig.maven.notice.lookup;

@@ -20,9 +20,9 @@
 
 -->
 
-<license-lookup xmlns="http://developer.jasig.org/schemas/notice/license-lookup.xsd"
+<license-lookup xmlns="https://source.jasig.org/schemas/maven-notice-plugin/license-lookup"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://developer.jasig.org/schemas/notice/license-lookup.xsd ../../main/resources/license-lookup.xsd">
+  xsi:schemaLocation="https://source.jasig.org/schemas/maven-notice-plugin/license-lookup https://source.jasig.org/schemas/maven-notice-plugin/license-lookup/license-lookup-v1.0.xsd">
   <artifact>
     <groupId>org.apache.maven.plugin.projectinfo.tests</groupId>
     <artifactId>notice</artifactId>

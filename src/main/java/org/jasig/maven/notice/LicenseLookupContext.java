@@ -63,7 +63,7 @@ public final class LicenseLookupContext {
         try {
             final JAXBContext jaxbContext = getJaxbContext();
             final Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty("jaxb.schemaLocation", "http://developer.jasig.org/schemas/notice/license-lookup.xsd http://developer.jasig.org/schemas/notice/license-lookup.xsd");
+            marshaller.setProperty("jaxb.schemaLocation", "https://source.jasig.org/schemas/maven-notice-plugin/license-lookup https://source.jasig.org/schemas/maven-notice-plugin/license-lookup/license-lookup-v1.0.xsd");
             marshaller.setProperty("jaxb.formatted.output", true);
             return marshaller;
         }

@@ -56,7 +56,7 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="artifact" type="{http://developer.jasig.org/schemas/notice/license-lookup.xsd}artifactLicense" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="artifact" type="{https://source.jasig.org/schemas/maven-notice-plugin/license-lookup}artifactLicense" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

@@ -54,7 +54,7 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
  * &lt;complexType name="mappedVersion">
  *   &lt;simpleContent>
  *     &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
- *       &lt;attribute name="type" type="{http://developer.jasig.org/schemas/notice/license-lookup.xsd}versionType" default="string" />
+ *       &lt;attribute name="type" type="{https://source.jasig.org/schemas/maven-notice-plugin/license-lookup}versionType" default="string" />
  *     &lt;/extension>
  *   &lt;/simpleContent>
  * &lt;/complexType>
