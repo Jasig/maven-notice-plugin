@@ -22,13 +22,21 @@ package org.jasig.maven.notice;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
+import org.jasig.maven.notice.lookup.ArtifactLicense;
+import org.jasig.maven.notice.lookup.ArtifactVersion;
 import org.jasig.maven.notice.lookup.LicenseLookup;
+import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
  * @author Eric Dalquist
@@ -36,42 +44,74 @@ import org.jasig.maven.notice.lookup.LicenseLookup;
  */
 public class LicenseLookupHelper {
     private static final Package LICENSE_LOOKUP_PACKAGE = LicenseLookup.class.getPackage();
-//    private final Map<String, Map<String, Map<>>>
+    
+    private final Map<String, Map<List<ArtifactVersion>, ArtifactLicense>> lookupCache = new LinkedHashMap<String, Map<List<ArtifactVersion>,ArtifactLicense>>();
+    private final Log logger;
+    private final ResourceFinder resourceFinder;
 
-    public LicenseLookupHelper(URL[] licenseLookup) {
-        final Unmarshaller unmarshaller;
+    public LicenseLookupHelper(Log logger, ResourceFinder resourceFinder, String[] licenseLookupFiles) throws MojoFailureException {
+        this.logger = logger;
+        this.resourceFinder = resourceFinder;
+        
+        final Unmarshaller unmarshaller = this.getUnmarshaller();
+        
+        if (licenseLookupFiles == null) {
+            licenseLookupFiles = new String[0];
+        }
+        
+        for (final String licenseLookupFile : licenseLookupFiles) {
+            final LicenseLookup licenseLookup = this.loadLicenseLookup(unmarshaller, licenseLookupFile);
+            
+            for (final ArtifactLicense artifactLicense : licenseLookup.getArtifact()) {
+                final String artifactKey = artifactLicense.getGroupId() + ":" + artifactLicense.getArtifactId();
+                
+                Map<List<ArtifactVersion>, ArtifactLicense> artifactVersions = this.lookupCache.get(artifactKey);
+                if (artifactVersions == null) {
+                    artifactVersions = new LinkedHashMap<List<ArtifactVersion>, ArtifactLicense>();
+                    this.lookupCache.put(artifactKey, artifactVersions);
+                }
+                
+                final List<ArtifactVersion> version = artifactLicense.getVersion();
+                artifactVersions.put(version, artifactLicense);
+            }
+        }
+    }
+
+    protected Unmarshaller getUnmarshaller() {
         try {
             final JAXBContext jaxbContext = JAXBContext.newInstance(LICENSE_LOOKUP_PACKAGE.getName());
-            unmarshaller = jaxbContext.createUnmarshaller();
+            return jaxbContext.createUnmarshaller();
         }
         catch (JAXBException e) {
             throw new IllegalStateException("Failed to load JAXBContext for package: " + LICENSE_LOOKUP_PACKAGE, e);
         }
+    }
+
+    protected LicenseLookup loadLicenseLookup(Unmarshaller unmarshaller, String licenseLookupFile) throws MojoFailureException {
+        final URL licenseLookupUrl = resourceFinder.findResource(licenseLookupFile);
         
-        if (licenseLookup == null) {
-            licenseLookup = new URL[0];
+        logger.debug("Loading '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'");
+
+        InputStream lookupStream = null;
+        try {
+            lookupStream = licenseLookupUrl.openStream();
+            return (LicenseLookup)unmarshaller.unmarshal(lookupStream);
+        }
+        catch (IOException e) {
+            new MojoFailureException("Failed to read '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
+        }
+        catch (JAXBException e) {
+            new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
+        }
+        finally {
+            IOUtils.closeQuietly(lookupStream);
         }
         
-        for (final URL licenseLookupUrl : licenseLookup) {
-            InputStream lookupStream = null;
-            try {
-                lookupStream = licenseLookupUrl.openStream();
-                final Object unmarshal = unmarshaller.unmarshal(lookupStream);
-                System.out.println(unmarshal);
-            }
-            catch (IOException e) {
-                //TODO handle exception with decent log message
-            }
-            catch (JAXBException e) {
-                //TODO handle exception with decent log message
-            }
-            finally {
-                IOUtils.closeQuietly(lookupStream);
-            }
-        }
+        throw new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'");
     }
 
 //    public ArtifactLicense getLicenseInfo(Artifact artifact) {
 //        
 //    }
+    
 }

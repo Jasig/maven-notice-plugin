@@ -19,10 +19,11 @@
 
 package org.jasig.maven.notice;
 
-import java.net.URL;
+import java.io.File;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -32,6 +33,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -39,6 +41,7 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
  * @author Eric Dalquist
@@ -112,27 +115,25 @@ public class GenerateNoticeMojo extends AbstractMojo {
     private MavenProjectBuilder mavenProjectBuilder;
     
     /**
-     * License Lookup XML files.
+     * License Lookup XML files / URLs.
      *
      * @parameter
+     * @required
      */
-    private URL[] licenseLookup;
+    private String[] licenseLookup;
     
     
     /* (non-Javadoc)
      * @see org.apache.maven.plugin.Mojo#execute()
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final DependencyNode tree;
-        try {
-            tree = this.dependencyTreeBuilder.buildDependencyTree(this.project, this.localRepository, 
-                    this.artifactFactory, this.artifactMetadataSource, null, this.artifactCollector);
-        }
-        catch (DependencyTreeBuilderException e) {
-            throw new MojoExecutionException( "Cannot build project dependency tree", e );
-        }
+        final Log logger = this.getLog();
         
-        final LicenseLookupHelper licenseLookupHelper = new LicenseLookupHelper(licenseLookup);
+        final DependencyNode tree = this.loadDependencyTree();
+        
+        final ResourceFinder finder = this.getResourceFinder();
+        
+        final LicenseLookupHelper licenseLookupHelper = new LicenseLookupHelper(logger, finder, licenseLookup);
 
         final List<?> remoteArtifactRepositories = project.getRemoteArtifactRepositories();
 
@@ -164,5 +165,40 @@ public class GenerateNoticeMojo extends AbstractMojo {
                 return true;
             }
         });
+    }
+
+
+    /**
+     * @return
+     * @throws MojoExecutionException
+     */
+    protected ResourceFinder getResourceFinder() throws MojoExecutionException {
+        final ResourceFinder finder = new ResourceFinder(project.getBasedir());
+        try {
+            final List<String> classpathElements = project.getCompileClasspathElements();
+            finder.setCompileClassPath(classpathElements);
+        }
+        catch (DependencyResolutionRequiredException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
+        finder.setPluginClassPath(getClass().getClassLoader());
+        return finder;
+    }
+
+
+    /**
+     * @return
+     * @throws MojoExecutionException
+     */
+    protected DependencyNode loadDependencyTree() throws MojoExecutionException {
+        final DependencyNode tree;
+        try {
+            tree = this.dependencyTreeBuilder.buildDependencyTree(this.project, this.localRepository, 
+                    this.artifactFactory, this.artifactMetadataSource, null, this.artifactCollector);
+        }
+        catch (DependencyTreeBuilderException e) {
+            throw new MojoExecutionException( "Cannot build project dependency tree", e );
+        }
+        return tree;
     }
 }
