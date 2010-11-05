@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
@@ -50,8 +49,6 @@ import org.jasig.maven.notice.util.ResourceFinder;
  * @version $Revision$
  */
 public class LicenseLookupHelper {
-    private static final Package LICENSE_LOOKUP_PACKAGE = LicenseLookup.class.getPackage();
-    
     private final Map<String, Map<List<MappedVersion>, ArtifactLicense>> lookupCache = new LinkedHashMap<String, Map<List<MappedVersion>,ArtifactLicense>>();
     private final Log logger;
     private final ResourceFinder resourceFinder;
@@ -60,7 +57,7 @@ public class LicenseLookupHelper {
         this.logger = logger;
         this.resourceFinder = resourceFinder;
         
-        final Unmarshaller unmarshaller = this.getUnmarshaller();
+        final Unmarshaller unmarshaller = LicenseLookupContext.getUnmarshaller();
         
         if (licenseLookupFiles == null) {
             licenseLookupFiles = new String[0];
@@ -126,16 +123,6 @@ public class LicenseLookupHelper {
     
     protected String getArtifactKey(String groupId, String artifactId) {
         return groupId + ":" + artifactId;
-    }
-
-    protected Unmarshaller getUnmarshaller() {
-        try {
-            final JAXBContext jaxbContext = JAXBContext.newInstance(LICENSE_LOOKUP_PACKAGE.getName());
-            return jaxbContext.createUnmarshaller();
-        }
-        catch (JAXBException e) {
-            throw new IllegalStateException("Failed to load JAXBContext for package: " + LICENSE_LOOKUP_PACKAGE, e);
-        }
     }
 
     protected LicenseLookup loadLicenseLookup(Unmarshaller unmarshaller, String licenseLookupFile) throws MojoFailureException {

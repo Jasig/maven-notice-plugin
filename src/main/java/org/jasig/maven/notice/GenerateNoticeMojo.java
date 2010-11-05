@@ -28,6 +28,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -46,6 +49,9 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
+import org.jasig.maven.notice.lookup.ArtifactLicense;
+import org.jasig.maven.notice.lookup.LicenseLookup;
+import org.jasig.maven.notice.lookup.MappedVersion;
 import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
@@ -189,20 +195,51 @@ public class GenerateNoticeMojo extends AbstractMojo {
 
         tree.accept(visitor);
      
+        //Check for any unresolved artifacts
         final Set<Artifact> unresolvedArtifacts = visitor.getUnresolvedArtifacts();
-        if (!unresolvedArtifacts.isEmpty()) {
-            logger.error("Failed to find Licenses for the following dependencies: ");
-            for (final Artifact unresolvedArtifact : unresolvedArtifacts) {
-                logger.error("\t" + unresolvedArtifact);
-            }
-            logger.error("Try adding them to a 'licenseLookup' file.");
-            
-            throw new MojoFailureException("Failed to find Licenses for " + unresolvedArtifacts.size() + " artifacts");
-        }
+        this.checkUnresolved(logger, unresolvedArtifacts);
         
+        //Write the generated NOTCE file
         final Map<String, String> resolvedLicenses = visitor.getResolvedLicenses();
         final String noticeLines = this.generateNoticeLines(resolvedLicenses);
         this.writeNotice(finder, noticeLines);
+    }
+
+    protected void checkUnresolved(Log logger, Set<Artifact> unresolvedArtifacts) throws MojoFailureException {
+        if (!unresolvedArtifacts.isEmpty()) {
+            final LicenseLookup licenseLookup = new LicenseLookup();
+            final List<ArtifactLicense> artifacts = licenseLookup.getArtifact();
+            
+            logger.error("Failed to find Licenses for the following dependencies: ");
+            for (final Artifact unresolvedArtifact : unresolvedArtifacts) {
+                logger.error("\t" + unresolvedArtifact);
+                
+                //Build LicenseLookup data model for artifacts that failed resolution
+                final ArtifactLicense artifactLicense = new ArtifactLicense();
+                artifactLicense.setGroupId(unresolvedArtifact.getGroupId());
+                artifactLicense.setArtifactId(unresolvedArtifact.getArtifactId());
+                
+                final List<MappedVersion> mappedVersions = artifactLicense.getVersion();
+                final MappedVersion mappedVersion = new MappedVersion();
+                mappedVersion.setValue(unresolvedArtifact.getVersion());
+                mappedVersions.add(mappedVersion);
+                
+                artifacts.add(artifactLicense);
+            }
+            logger.error("Try adding them to a 'licenseLookup' file.");
+            
+            final Marshaller marshaller = LicenseLookupContext.getMarshaller();
+            final File mappingsfile = new File(project.getBasedir(), "license-mappings.xml");
+            try {
+                marshaller.marshal(licenseLookup, mappingsfile);
+                logger.error("A stub license mapping file has been written to:" + mappingsfile);
+            }
+            catch (JAXBException e) {
+                logger.warn("Failed to write stub license-mappings.xml file to: " + mappingsfile, e);
+            }
+            
+            throw new MojoFailureException("Failed to find Licenses for " + unresolvedArtifacts.size() + " artifacts");
+        }
     }
     
     protected String generateNoticeLines(Map<String, String> resolvedLicenses) {

@@ -20,11 +20,11 @@
 package org.jasig.maven.notice;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -42,7 +42,7 @@ import org.jasig.maven.notice.lookup.ArtifactLicense;
 
 class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
     private final Map<String, String> resolvedLicenses = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-    private final Set<Artifact> unresolvedArtifacts = new LinkedHashSet<Artifact>();
+    private final Set<Artifact> unresolvedArtifacts = new TreeSet<Artifact>();
     
     private final Log logger;
     private final LicenseLookupHelper licenseLookupHelper;
