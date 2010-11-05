@@ -1,0 +1,84 @@
+Copyright 2010, JA-SIG, Inc.
+This project includes software developed by Jasig.
+http://www.jasig.org/
+
+Licensed under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the
+specific language governing permissions and limitations
+under the License.
+
+This project includes:
+  Backport of JSR 166 under Public Domain
+  bcel under Apache License, Version 2
+  classworlds under BSD Style License
+  CLI under Apache License, Version 2
+  Commons IO under The Apache Software License, Version 2.0
+  commons-beanutils under Apache License, Version 2
+  commons-collections under Apache License, Version 2
+  commons-digester under Apache License, Version 2
+  Default Plexus Container under Apache License, Version 2
+  Doxia :: Logging API under The Apache Software License, Version 2.0
+  Doxia Sink API under Apache License, Version 2
+  Doxia Sitetools :: Decoration Model under The Apache Software License, Version 2.0
+  HttpUnit under BSD Style License
+  jakarta-regexp under Apache License, Version 2
+  JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
+  JAXB API bundle for GlassFish V3 under CDDL 1.0 or GPL2 w/ CPE
+  JAXB RI under CDDL 1.0 or GPL2 w/ CPE
+  JAXB2 Basics - Basic Plugins under BSD-Style License
+  JAXB2 Basics - Runtime under BSD-Style License
+  JAXB2 Basics - Tools under BSD-Style License
+  js under Mozilla Public License, Version 1.1
+  jsch under BSD
+  JTidy under Java HTML Tidy License
+  JUnit under Common Public License Version 1.0
+  junit-addons under Apache License, Version 2
+  Lang under The Apache Software License, Version 2.0
+  Logging under The Apache Software License, Version 2.0
+  Maven under The Apache Software License, Version 2.0
+  Maven Artifact under The Apache Software License, Version 2.0
+  Maven Artifact Manager under The Apache Software License, Version 2.0
+  Maven Dependency Tree under The Apache Software License, Version 2.0
+  Maven Doxia Integration Tools under The Apache Software License, Version 2.0
+  Maven Error Diagnostics under The Apache Software License, Version 2.0
+  Maven JAR Utilities under The Apache Software License, Version 2.0
+  Maven Local Settings Model under The Apache Software License, Version 2.0
+  Maven Model under The Apache Software License, Version 2.0
+  Maven Monitor under The Apache Software License, Version 2.0
+  Maven NOTICE Generation Plugin under Apache License Version 2.0
+  Maven Plugin API under The Apache Software License, Version 2.0
+  Maven Plugin Descriptor Model under The Apache Software License, Version 2.0
+  Maven Plugin Parameter Documenter API under The Apache Software License, Version 2.0
+  Maven Plugin Registry Model under The Apache Software License, Version 2.0
+  Maven Plugin Testing Mechanism under The Apache Software License, Version 2.0
+  Maven Profile Model under The Apache Software License, Version 2.0
+  Maven Project Builder under The Apache Software License, Version 2.0
+  Maven Reporting API under The Apache Software License, Version 2.0
+  Maven Repository Metadata Model under The Apache Software License, Version 2.0
+  Maven Wagon API under The Apache Software License, Version 2.0
+  Maven Wagon File Provider under The Apache Software License, Version 2.0
+  Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
+  Maven Wagon SSH Provider under The Apache Software License, Version 2.0
+  Neko HTML under Apache License, Version 2
+  oro under Apache License, Version 2
+  Plexus Archiver Component under Apache License, Version 2
+  Plexus Common Utilities under The Apache Software License, Version 2.0
+  Plexus Default Interactivity Handler under Apache License, Version 2
+  Plexus Digest / Hashcode Components under Apache License, Version 2
+  Plexus I18N Component under Apache License, Version 2
+  Plexus Interpolation API under The Apache Software License, Version 2.0
+  servlet-api under UNKNOWN
+  Streaming API for XML under GNU General Public Library or COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
+  Validator under The Apache Software License, Version 2.0
+  xercesImpl under Apache License, Version 2
+  XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+  xmlParserAPIs under Apache License, Version 2
+

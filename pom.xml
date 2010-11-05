@@ -171,6 +171,9 @@
                     <groupId>org.jasig.maven</groupId>
                     <artifactId>maven-notice-plugin</artifactId>
                     <configuration>
+                        <licenseLookup>
+                            <param>https://source.jasig.org/licenses/license-mappings.xml</param>
+                        </licenseLookup>
                     </configuration>
                 </plugin>
                 <plugin>
