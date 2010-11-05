@@ -20,7 +20,10 @@
 package org.jasig.maven.notice;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -113,9 +116,22 @@ public class GenerateNoticeMojo extends AbstractMojo {
      * License Lookup XML files / URLs.
      *
      * @parameter
-     * @required
      */
     private String[] licenseLookup;
+    
+    /**
+     * Template for NOTICE file generation
+     *
+     * @parameter default-value="NOTICE.template"
+     */
+    private String noticeTemplate;
+    
+    /**
+     * Placeholder string in the NOTICE template file
+     *
+     * @parameter default-value="#GENERATED_NOTICES#"
+     */
+    private String noticeTemplatePlaceholder;
     
     
     /* (non-Javadoc)
@@ -133,10 +149,22 @@ public class GenerateNoticeMojo extends AbstractMojo {
         final List<?> remoteArtifactRepositories = project.getRemoteArtifactRepositories();
 
         final LicenseResolvingNodeVisitor visitor = new LicenseResolvingNodeVisitor(
+                logger,
                 licenseLookupHelper, remoteArtifactRepositories, 
                 this.mavenProjectBuilder, this.localRepository);
 
         tree.accept(visitor);
+        
+        final Set<Artifact> unresolvedArtifacts = visitor.getUnresolvedArtifacts();
+        if (!unresolvedArtifacts.isEmpty()) {
+            logger.error("Failed to find Licenses for the following dependencies: ");
+            for (final Artifact unresolvedArtifact : unresolvedArtifacts) {
+                logger.error("\t" + unresolvedArtifact);
+            }
+            logger.error("Try adding them to a 'licenseLookup' file.");
+            
+            throw new MojoFailureException("Failed to find Licenses for " + unresolvedArtifacts.size() + " artifacts");
+        }
     }
 
     @SuppressWarnings("unchecked")
