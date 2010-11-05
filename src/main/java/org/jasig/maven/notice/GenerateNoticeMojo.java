@@ -19,10 +19,18 @@
 
 package org.jasig.maven.notice;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -124,14 +132,40 @@ public class GenerateNoticeMojo extends AbstractMojo {
      *
      * @parameter default-value="NOTICE.template"
      */
-    private String noticeTemplate;
+    private String noticeTemplate = "NOTICE.template";
     
     /**
      * Placeholder string in the NOTICE template file
      *
      * @parameter default-value="#GENERATED_NOTICES#"
      */
-    private String noticeTemplatePlaceholder;
+    private String noticeTemplatePlaceholder = "#GENERATED_NOTICES#";
+    
+    /**
+     * Output location for the generated NOTICE file
+     *
+     * @parameter
+     */
+    private String outputDir = "";
+    
+    /**
+     * Output file name
+     *
+     * @parameter default-value="NOTICE"
+     */
+    private String fileName = "NOTICE";
+    
+    /**
+     * Level of indentation to use when generating notice lines
+     *
+     * @parameter default-value="2"
+     */
+    private int indent = 2;
+    
+    /**
+     * @parameter expression="${encoding}" default-value="${project.build.sourceEncoding}"
+     */
+    private String encoding = "UTF-8";
     
     
     /* (non-Javadoc)
@@ -154,7 +188,7 @@ public class GenerateNoticeMojo extends AbstractMojo {
                 this.mavenProjectBuilder, this.localRepository);
 
         tree.accept(visitor);
-        
+     
         final Set<Artifact> unresolvedArtifacts = visitor.getUnresolvedArtifacts();
         if (!unresolvedArtifacts.isEmpty()) {
             logger.error("Failed to find Licenses for the following dependencies: ");
@@ -165,6 +199,68 @@ public class GenerateNoticeMojo extends AbstractMojo {
             
             throw new MojoFailureException("Failed to find Licenses for " + unresolvedArtifacts.size() + " artifacts");
         }
+        
+        final Map<String, String> resolvedLicenses = visitor.getResolvedLicenses();
+        final String noticeLines = this.generateNoticeLines(resolvedLicenses);
+        this.writeNotice(finder, noticeLines);
+    }
+    
+    protected String generateNoticeLines(Map<String, String> resolvedLicenses) {
+        final StringBuilder builder = new StringBuilder();
+        
+        final String indent = StringUtils.repeat(" ", this.indent);
+        
+        for (final Map.Entry<String, String> resolvedEntry : resolvedLicenses.entrySet()) {
+            builder.append(indent).append(resolvedEntry.getKey()).append(" under ").append(resolvedEntry.getValue()).append("\n");
+        }
+        
+        return builder.toString();
+    }
+    
+    protected void writeNotice(ResourceFinder finder, String noticeLines) throws MojoFailureException {
+        final String noticeTemplateContents = this.readNoticeTemplate(finder);
+        
+        //Replace the template placeholder with the generated notice data
+        final String noticeContents = noticeTemplateContents.replaceAll(Pattern.quote(this.noticeTemplatePlaceholder), noticeLines);
+        
+        //Write out the generated notice file
+        final File outputFile = getNoticeOutputFile();
+        try {
+            FileUtils.writeStringToFile(outputFile, noticeContents, this.encoding);
+        }
+        catch (IOException e) {
+            throw new MojoFailureException("Failed to write NOTICE File to: " + outputFile, e);
+        }
+    }
+
+    protected String readNoticeTemplate(ResourceFinder finder) throws MojoFailureException {
+        final URL inputFile = finder.findResource(this.noticeTemplate);
+
+        final String noticeTemplateContents;
+        InputStream inputStream = null;
+        try {
+            inputStream = inputFile.openStream();
+            noticeTemplateContents = IOUtils.toString(inputStream, this.encoding);
+        }
+        catch (IOException e) {
+            throw new MojoFailureException("Failed to open NOTICE Template File '" + this.noticeTemplate + "' from: " + inputFile, e);
+        }
+        finally {
+            IOUtils.closeQuietly(inputStream);
+        }
+        return noticeTemplateContents;
+    }
+    
+    protected File getNoticeOutputFile() {
+        if (this.outputDir == null) {
+            this.outputDir = "";
+        }
+        
+        File outputPath = new File(this.outputDir);
+        if (!outputPath.isAbsolute()) {
+            outputPath = new File(project.getBasedir(), this.outputDir);
+        }
+        return new File(outputPath, this.fileName);
     }
 
     @SuppressWarnings("unchecked")
