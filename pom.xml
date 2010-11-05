@@ -41,6 +41,8 @@
         <sitePluginVersion>2.1</sitePluginVersion>
         <jaxbApiVersion>2.2.1</jaxbApiVersion>
         <jaxbImplVersion>2.2.1.1</jaxbImplVersion>
+        <jaxbXjcVersion>2.2.1</jaxbXjcVersion>
+        <jaxb2basicsVersion>0.6.0</jaxb2basicsVersion>
     </properties>
 
     <dependencies>
@@ -155,6 +157,11 @@
             <artifactId>jaxb-impl</artifactId>
             <version>${jaxbImplVersion}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jvnet.jaxb2_commons</groupId>
+            <artifactId>jaxb2-basics</artifactId>
+            <version>${jaxb2basicsVersion}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -169,28 +176,38 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>jaxb2-maven-plugin</artifactId>
+                    <groupId>org.jvnet.jaxb2.maven2</groupId>
+                    <artifactId>maven-jaxb2-plugin</artifactId>
                     <executions>
                         <execution>
                             <goals>
-                                <goal>xjc</goal>
+                                <goal>generate</goal>
                             </goals>
                         </execution>
                     </executions>
                     <configuration>
-                        <packageName>org.jasig.maven.notice.lookup</packageName>
-                        <schemaDirectory>${basedir}/src/main/resources</schemaDirectory>
-                        <clearOutputDir>false</clearOutputDir>
-                        <schemaFiles>license-lookup.xsd</schemaFiles>
-                        <outputDirectory>${basedir}/src/main/java</outputDirectory>
+                        <generateDirectory>src/main/java</generateDirectory>
+                        <generatePackage>org.jasig.maven.notice.lookup</generatePackage>
+                        <removeOldOutput>false</removeOldOutput>
                         <extension>true</extension>
+                        <args>
+                            <arg>-XtoString</arg>
+                            <arg>-Xequals</arg>
+                            <arg>-XhashCode</arg>
+                        </args>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.jvnet.jaxb2_commons</groupId>
+                                <artifactId>jaxb2-basics</artifactId>
+                                <version>${jaxb2basicsVersion}</version>
+                            </plugin>
+                        </plugins>
                     </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>com.sun.xml.bind</groupId>
                             <artifactId>jaxb-xjc</artifactId>
-                            <version>2.2.1</version>
+                            <version>${jaxbXjcVersion}</version>
                         </dependency>
                     </dependencies>
                 </plugin>

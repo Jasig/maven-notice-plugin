@@ -21,7 +21,9 @@ package org.jasig.maven.notice.stubs;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -155,10 +157,17 @@ public abstract class BasicProjectStub
     @Override
     public Set<Artifact> getDependencyArtifacts()
     {
-        Artifact artifact =
+        Artifact artifact1 =
             new DefaultArtifact( "junit", "junit", VersionRange.createFromVersion( "3.8.1" ), Artifact.SCOPE_TEST,
                                  "jar", null, new DefaultArtifactHandler( "jar" ), false );
-        return Collections.singleton( artifact );
+        
+        Artifact artifact2 =
+            new DefaultArtifact( "org.apache.maven", "maven-project", VersionRange.createFromVersion( "2.2.0" ), Artifact.SCOPE_COMPILE,
+                                 "jar", null, new DefaultArtifactHandler( "jar" ), false );
+        
+        
+        final List<Artifact> artifacts = Arrays.asList(artifact1, artifact2);
+        return Collections.unmodifiableSet(new LinkedHashSet<Artifact>(artifacts));
     }
 
     /** {@inheritDoc} */

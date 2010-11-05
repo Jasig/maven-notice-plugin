@@ -13,29 +13,6 @@
         </xs:complexType>
     </xs:element>
     <xs:complexType name="artifactLicense">
-        <xs:complexContent>
-            <xs:extension base="artifactKey">
-                <xs:sequence>
-                    <xs:element minOccurs="0" name="name" type="xs:string">
-                        <xs:annotation>
-                            <xs:documentation source="description"> Optional library name to use in the
-                                NOTICE file. Overrides the name element form the artifact's pom.xml
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element minOccurs="0" name="license" type="xs:string">
-                        <xs:annotation>
-                            <xs:documentation source="description"> Optional license name to use in the
-                                NOTICE file. Overrides and license elements from the artifact's pom.xml
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:sequence>            
-            </xs:extension>
-        </xs:complexContent>
-        
-    </xs:complexType>
-    <xs:complexType name="artifactKey">
         <xs:sequence>
             <xs:element name="groupId" type="xs:string">
                 <xs:annotation>
@@ -49,15 +26,29 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element minOccurs="0" maxOccurs="unbounded" name="version" type="artifactVersion">
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="version" type="mappedVersion">
                 <xs:annotation>
                     <xs:documentation source="description"> Versions of the artifact the overrides
                         should be applied to </xs:documentation>
                 </xs:annotation>
             </xs:element>
-        </xs:sequence>
+            <xs:element minOccurs="0" name="name" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation source="description"> Optional library name to use in the
+                        NOTICE file. Overrides the name element form the artifact's pom.xml
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" name="license" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation source="description"> Optional license name to use in the
+                        NOTICE file. Overrides and license elements from the artifact's pom.xml
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>            
     </xs:complexType>
-    <xs:complexType name="artifactVersion">
+    <xs:complexType name="mappedVersion">
         <xs:simpleContent>
             <xs:extension base="xs:string">
                 <xs:attribute name="type" default="string" type="versionType">

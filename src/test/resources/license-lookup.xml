@@ -9,4 +9,11 @@
     <name>Notice Test</name>
     <license>Apache Software License 2.0</license>
   </artifact>
+  <artifact>
+    <groupId>org.codehaus.plexus</groupId>
+    <artifactId>plexus-container-default</artifactId>
+    <version type="regex">1\.0.*</version>
+    <name>Plexus</name>
+    <license>FooBar</license>
+  </artifact>
 </license-lookup>

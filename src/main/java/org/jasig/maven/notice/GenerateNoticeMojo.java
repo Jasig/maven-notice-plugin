@@ -19,28 +19,22 @@
 
 package org.jasig.maven.notice;
 
-import java.io.File;
 import java.util.List;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactCollector;
-import org.apache.maven.model.License;
-import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
@@ -51,6 +45,7 @@ import org.jasig.maven.notice.util.ResourceFinder;
  * @requiresDependencyResolution test
  */
 public class GenerateNoticeMojo extends AbstractMojo {
+
     /**
      * The Maven Project.
      *
@@ -58,7 +53,7 @@ public class GenerateNoticeMojo extends AbstractMojo {
      * @required
      * @readonly
      */
-    protected MavenProject project;
+    private MavenProject project;
 
     /**
      * The dependency tree builder to use.
@@ -137,41 +132,14 @@ public class GenerateNoticeMojo extends AbstractMojo {
 
         final List<?> remoteArtifactRepositories = project.getRemoteArtifactRepositories();
 
-        tree.accept(new DependencyNodeVisitor() {
-            public boolean visit(DependencyNode node) {
-                if (DependencyNode.INCLUDED == node.getState()) {
-                    final Artifact artifact = node.getArtifact();
-                    System.out.println(artifact);
-                    
-                    final MavenProject artifactProject;
-                    try {
-                        artifactProject = mavenProjectBuilder.buildFromRepository(artifact, remoteArtifactRepositories, localRepository, false);
-                    }
-                    catch (ProjectBuildingException e) {
-                        System.err.println("Failed to find license info for: " + artifact);
-                        return true;
-                    }
-                    
-                    final Model model = artifactProject.getModel();
-                    final List<License> licenses = model.getLicenses();
-                    for (final License license : licenses) {
-                        System.out.println("\t" + artifactProject.getName() + " under the " + license.getName());
-                    }
-                }
-                return true;
-            }
-            
-            public boolean endVisit(DependencyNode node) {
-                return true;
-            }
-        });
+        final LicenseResolvingNodeVisitor visitor = new LicenseResolvingNodeVisitor(
+                licenseLookupHelper, remoteArtifactRepositories, 
+                this.mavenProjectBuilder, this.localRepository);
+
+        tree.accept(visitor);
     }
 
-
-    /**
-     * @return
-     * @throws MojoExecutionException
-     */
+    @SuppressWarnings("unchecked")
     protected ResourceFinder getResourceFinder() throws MojoExecutionException {
         final ResourceFinder finder = new ResourceFinder(project.getBasedir());
         try {
@@ -186,19 +154,15 @@ public class GenerateNoticeMojo extends AbstractMojo {
     }
 
 
-    /**
-     * @return
-     * @throws MojoExecutionException
-     */
     protected DependencyNode loadDependencyTree() throws MojoExecutionException {
-        final DependencyNode tree;
         try {
-            tree = this.dependencyTreeBuilder.buildDependencyTree(this.project, this.localRepository, 
-                    this.artifactFactory, this.artifactMetadataSource, null, this.artifactCollector);
+            return this.dependencyTreeBuilder.buildDependencyTree(
+                    this.project, this.localRepository, 
+                    this.artifactFactory, this.artifactMetadataSource, 
+                    null, this.artifactCollector);
         }
         catch (DependencyTreeBuilderException e) {
             throw new MojoExecutionException( "Cannot build project dependency tree", e );
         }
-        return tree;
     }
 }

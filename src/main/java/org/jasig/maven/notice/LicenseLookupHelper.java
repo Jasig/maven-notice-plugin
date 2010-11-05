@@ -25,27 +25,34 @@ import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.jasig.maven.notice.lookup.ArtifactLicense;
-import org.jasig.maven.notice.lookup.ArtifactVersion;
 import org.jasig.maven.notice.lookup.LicenseLookup;
+import org.jasig.maven.notice.lookup.MappedVersion;
 import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
+ * Utility to load license-lookup XML files and search through the loaded results for matches on a specified
+ * artifact.
+ * 
  * @author Eric Dalquist
  * @version $Revision$
  */
 public class LicenseLookupHelper {
     private static final Package LICENSE_LOOKUP_PACKAGE = LicenseLookup.class.getPackage();
     
-    private final Map<String, Map<List<ArtifactVersion>, ArtifactLicense>> lookupCache = new LinkedHashMap<String, Map<List<ArtifactVersion>,ArtifactLicense>>();
+    private final Map<String, Map<List<MappedVersion>, ArtifactLicense>> lookupCache = new LinkedHashMap<String, Map<List<MappedVersion>,ArtifactLicense>>();
     private final Log logger;
     private final ResourceFinder resourceFinder;
 
@@ -63,18 +70,62 @@ public class LicenseLookupHelper {
             final LicenseLookup licenseLookup = this.loadLicenseLookup(unmarshaller, licenseLookupFile);
             
             for (final ArtifactLicense artifactLicense : licenseLookup.getArtifact()) {
-                final String artifactKey = artifactLicense.getGroupId() + ":" + artifactLicense.getArtifactId();
+                final String groupId = artifactLicense.getGroupId();
+                final String artifactId = artifactLicense.getArtifactId();
+                final String artifactKey = getArtifactKey(groupId, artifactId);
                 
-                Map<List<ArtifactVersion>, ArtifactLicense> artifactVersions = this.lookupCache.get(artifactKey);
+                Map<List<MappedVersion>, ArtifactLicense> artifactVersions = this.lookupCache.get(artifactKey);
                 if (artifactVersions == null) {
-                    artifactVersions = new LinkedHashMap<List<ArtifactVersion>, ArtifactLicense>();
+                    artifactVersions = new LinkedHashMap<List<MappedVersion>, ArtifactLicense>();
                     this.lookupCache.put(artifactKey, artifactVersions);
                 }
                 
-                final List<ArtifactVersion> version = artifactLicense.getVersion();
+                final List<MappedVersion> version = artifactLicense.getVersion();
                 artifactVersions.put(version, artifactLicense);
+                this.logger.debug("Mapped " + artifactLicense + " from: " + licenseLookupFile);
             }
         }
+    }
+    
+    public ArtifactLicense lookupLicenseMapping(String groupId, String artifactId, ArtifactVersion artifactVersion) {
+        //Find license info mapped to the group/artifact
+        final String artifactKey = getArtifactKey(groupId, artifactId);
+        final Map<List<MappedVersion>, ArtifactLicense> artifactVersions = this.lookupCache.get(artifactKey);
+        if (artifactVersions == null) {
+            return null;
+        }
+        
+        //Search the mapped versions lists for a matching version
+        for (final Entry<List<MappedVersion>, ArtifactLicense> versionEntry : artifactVersions.entrySet()) {
+            final List<MappedVersion> versions = versionEntry.getKey();
+            for (final MappedVersion version :versions) {
+                final boolean matches = this.compareVersions(version, artifactVersion);
+                if (matches) {
+                    final ArtifactLicense artifactLicense = versionEntry.getValue();
+                    this.logger.debug("Found " + artifactLicense + " for: " + groupId + ":" + artifactId + ":" + artifactVersion);
+                    return artifactLicense;
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    protected boolean compareVersions(final MappedVersion version, ArtifactVersion artifactVersion) {
+        switch (version.getType()) {
+            case REGEX: {
+                final Pattern versionPattern = Pattern.compile(version.getValue());
+                return versionPattern.matcher(artifactVersion.toString()).matches();
+            }
+            default: {
+                final ArtifactVersion mappedVersion = new DefaultArtifactVersion(version.getValue());
+                return mappedVersion.equals(artifactVersion);
+            }
+        }
+    }
+    
+    protected String getArtifactKey(String groupId, String artifactId) {
+        return groupId + ":" + artifactId;
     }
 
     protected Unmarshaller getUnmarshaller() {
@@ -109,9 +160,4 @@ public class LicenseLookupHelper {
         
         throw new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'");
     }
-
-//    public ArtifactLicense getLicenseInfo(Artifact artifact) {
-//        
-//    }
-    
 }
