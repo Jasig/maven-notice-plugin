@@ -19,6 +19,7 @@
 
 package org.jasig.maven.notice;
 
+import java.net.URL;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
@@ -110,6 +111,14 @@ public class GenerateNoticeMojo extends AbstractMojo {
      */
     private MavenProjectBuilder mavenProjectBuilder;
     
+    /**
+     * License Lookup XML files.
+     *
+     * @parameter
+     */
+    private URL[] licenseLookup;
+    
+    
     /* (non-Javadoc)
      * @see org.apache.maven.plugin.Mojo#execute()
      */
@@ -122,6 +131,8 @@ public class GenerateNoticeMojo extends AbstractMojo {
         catch (DependencyTreeBuilderException e) {
             throw new MojoExecutionException( "Cannot build project dependency tree", e );
         }
+        
+        final LicenseLookupHelper licenseLookupHelper = new LicenseLookupHelper(licenseLookup);
 
         final List<?> remoteArtifactRepositories = project.getRemoteArtifactRepositories();
 

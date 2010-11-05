@@ -1,78 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns="http://developer.jasig.org/schemas/notice/license-lookup.xsd"
-  targetNamespace="http://developer.jasig.org/schemas/notice/license-lookup.xsd"
-  elementFormDefault="qualified">
+    xmlns="http://developer.jasig.org/schemas/notice/license-lookup.xsd"
+    targetNamespace="http://developer.jasig.org/schemas/notice/license-lookup.xsd"
+    elementFormDefault="qualified">
 
-
-  <xs:element name="license-lookup">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="artifact" type="artifactType"/>
-      </xs:sequence>
+    <xs:element name="license-lookup">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="artifact" minOccurs="0" maxOccurs="unbounded"
+                    type="artifactLicense"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="artifactLicense">
+        <xs:complexContent>
+            <xs:extension base="artifactKey">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="name" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation source="description"> Optional library name to use in the
+                                NOTICE file. Overrides the name element form the artifact's pom.xml
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="license" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation source="description"> Optional license name to use in the
+                                NOTICE file. Overrides and license elements from the artifact's pom.xml
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>            
+            </xs:extension>
+        </xs:complexContent>
+        
     </xs:complexType>
-  </xs:element>
-  <xs:complexType name="artifactType">
-    <xs:sequence>
-      <xs:element name="groupId" type="xs:string">
-        <xs:annotation>
-          <xs:documentation source="description">
-            The artifacts groupId
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="artifactId" type="xs:string">
-        <xs:annotation>
-          <xs:documentation source="description">
-            The artifacts artifactId
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element maxOccurs="unbounded" name="version" type="artifactVersionType">
-        <xs:annotation>
-          <xs:documentation source="description">
-            Versions of the artifact the overrides should be applied to
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="0" name="name" type="xs:string">
-        <xs:annotation>
-          <xs:documentation source="description">
-            Optional library name to use in the NOTICE file. Overrides the name element form the artifact's pom.xml
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="0" name="license" type="xs:string">
-        <xs:annotation>
-          <xs:documentation source="description">
-            Optional license name to use in the NOTICE file. Overrides and license elements from the artifact's pom.xml
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="artifactVersionType">
-    <xs:simpleContent>
-      <xs:extension base="xs:string">
-        <xs:attribute name="type" default="string">
-          <xs:annotation>
-            <xs:documentation source="description">
-              Type of version number string. Plain strings, regular expressions and maven version patterns are supported.
-            </xs:documentation>
-          </xs:annotation>
-          <xs:simpleType>
-            <xs:list>
-              <xs:simpleType>
-                <xs:restriction base="xs:string">
-                  <xs:enumeration value="string" />
-                  <xs:enumeration value="regex" />
-                  <xs:enumeration value="maven" />
-                </xs:restriction>
-              </xs:simpleType>
-            </xs:list>
-          </xs:simpleType>
-        </xs:attribute>
-      </xs:extension>
-    </xs:simpleContent>
-  </xs:complexType>
+    <xs:complexType name="artifactKey">
+        <xs:sequence>
+            <xs:element name="groupId" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation source="description"> The artifacts groupId
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="artifactId" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation source="description"> The artifacts artifactId
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="version" type="artifactVersion">
+                <xs:annotation>
+                    <xs:documentation source="description"> Versions of the artifact the overrides
+                        should be applied to </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="artifactVersion">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="type" default="string" type="versionType">
+                    <xs:annotation>
+                        <xs:documentation source="description"> Type of version number string. Plain
+                            strings, regular expressions and maven version patterns are supported.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="versionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="string"/>
+            <xs:enumeration value="regex"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

@@ -46,6 +46,9 @@ under the License.
         <artifactId>maven-notice-plugin</artifactId>
         <configuration>
           <project implementation="org.jasig.maven.notice.stubs.NoticeStub"/>
+          <licenseLookup>
+            <param>../license-lookup.xml</param>
+          </licenseLookup>
         <!-- 
           <outputDirectory>target/test-harness/license</outputDirectory>
           <localRepository>${localRepository}</localRepository>

@@ -25,8 +25,8 @@
 
     <name>Maven NOTICE Generation Plugin</name>
     <description>
-    Generates Apache style NOTICE files
-  </description>
+        Generates Apache style NOTICE files
+    </description>
 
     <prerequisites>
         <maven>2.2.1</maven>
