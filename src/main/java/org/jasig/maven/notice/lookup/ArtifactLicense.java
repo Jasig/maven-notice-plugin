@@ -214,6 +214,7 @@ public class ArtifactLicense
         this.license = value;
     }
 
+    @Override
     public String toString() {
         final ToStringStrategy strategy = JAXBToStringStrategy.INSTANCE;
         final StringBuilder buffer = new StringBuilder();
@@ -313,6 +314,7 @@ public class ArtifactLicense
         return true;
     }
 
+    @Override
     public boolean equals(Object object) {
         final EqualsStrategy strategy = JAXBEqualsStrategy.INSTANCE;
         return equals(null, null, object, strategy);
@@ -348,6 +350,7 @@ public class ArtifactLicense
         return currentHashCode;
     }
 
+    @Override
     public int hashCode() {
         final HashCodeStrategy strategy = JAXBHashCodeStrategy.INSTANCE;
         return this.hashCode(null, strategy);

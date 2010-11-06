@@ -232,6 +232,21 @@
                 	<artifactId>maven-plugin-plugin</artifactId>
                 	<version>2.6</version>
                 </plugin>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>NOTICE</exclude>
+                        <exclude>**/NOTICE.expected</exclude>
+                        <exclude>**/NOTICE.template</exclude>
+                        <exclude>**/sun-jaxb.episode</exclude>
+                        <exclude>LICENSE</exclude>
+                        <exclude>src/main/java/org/jasig/maven/notice/util/CustomClassLoader.java</exclude>
+                        <exclude>src/main/java/org/jasig/maven/notice/util/ResourceFinder.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             </plugins>
         </pluginManagement>
     </build>

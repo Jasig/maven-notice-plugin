@@ -110,9 +110,8 @@ public class MappedVersion
     public VersionType getType() {
         if (type == null) {
             return VersionType.STRING;
-        } else {
-            return type;
         }
+        return type;
     }
 
     /**
@@ -127,6 +126,7 @@ public class MappedVersion
         this.type = value;
     }
 
+    @Override
     public String toString() {
         final ToStringStrategy strategy = JAXBToStringStrategy.INSTANCE;
         final StringBuilder buffer = new StringBuilder();
@@ -184,6 +184,7 @@ public class MappedVersion
         return true;
     }
 
+    @Override
     public boolean equals(Object object) {
         final EqualsStrategy strategy = JAXBEqualsStrategy.INSTANCE;
         return equals(null, null, object, strategy);
@@ -204,6 +205,7 @@ public class MappedVersion
         return currentHashCode;
     }
 
+    @Override
     public int hashCode() {
         final HashCodeStrategy strategy = JAXBHashCodeStrategy.INSTANCE;
         return this.hashCode(null, strategy);
