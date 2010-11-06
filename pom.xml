@@ -31,6 +31,20 @@
     <prerequisites>
         <maven>2.2.1</maven>
     </prerequisites>
+    
+    <scm>
+        <connection>scm:svn:https://source.jasig.org/sandbox/maven-notice-plugin/trunk</connection>
+        <developerConnection>scm:svn:https://source.jasig.org/sandbox/maven-notice-plugin/trunk</developerConnection>
+        <url>https://developer.jasig.org/source/browse/jasigsvn/sandbox/maven-notice-plugin/trunk</url>
+    </scm>
+
+    <distributionManagement>
+        <site>
+            <id>developer.jasig</id>
+            <url>${jasig-site-dist-base}/maven-notice-plugin/${project.version}</url>
+        </site>
+    </distributionManagement>
+
 
     <properties>
         <doxiaVersion>1.1.2</doxiaVersion>
