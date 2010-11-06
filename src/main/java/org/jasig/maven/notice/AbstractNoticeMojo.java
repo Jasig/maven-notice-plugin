@@ -46,7 +46,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
@@ -58,9 +57,6 @@ import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
  * Common base mojo for notice related plugins
- * 
- * TODO multi-module projects & aggregation of notice files
- * TODO ability to exclude specified modules in multi-module project?
  * 
  * @author Eric Dalquist
  * @version $Revision$
@@ -135,7 +131,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      *
      * @parameter
      */
-    protected String[] licenseLookup;
+    protected String[] licenseLookup = new String[0];
     
     /**
      * Template for NOTICE file generation
@@ -184,6 +180,14 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      */
     protected boolean aggregating = true;
     
+    /**
+     * Module paths to exclude when running with aggregating=true
+     *
+     * @parameter
+     */
+    protected String[] excludedModulePaths = new String[0];
+    
+    
     
     /* (non-Javadoc)
      * @see org.apache.maven.plugin.Mojo#execute()
@@ -207,7 +211,6 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
                 licenseLookupHelper, remoteArtifactRepositories, 
                 this.mavenProjectBuilder, this.localRepository);
 
-
         this.parseProject(logger, this.project, visitor);
      
         //Check for any unresolved artifacts
@@ -227,6 +230,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     
     protected abstract void handleNotice(Log logger, ResourceFinder finder, String noticeContents) throws MojoFailureException;
     
+    @SuppressWarnings("unchecked")
     protected void parseProject(Log logger, MavenProject project, DependencyNodeVisitor visitor) throws MojoExecutionException, MojoFailureException {
         logger.info("Parsing Dependencies for: " + project.getName());
         
@@ -239,17 +243,14 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
             return;
         }
         
+        //No child modules, return
+        final List<MavenProject> collectedProjects = project.getCollectedProjects();
+        if (collectedProjects == null) {
+            return;
+        }
+        
         //Find all sub-modules for the project
-        for (final String module : project.getModel().getModules()) {
-            final File moduleFile = new File(new File(this.project.getBasedir(), module), "pom.xml");
-            MavenProject moduleProject;
-            try {
-                moduleProject = this.mavenProjectBuilder.build(moduleFile, localRepository, null);
-            }
-            catch (ProjectBuildingException e) {
-                throw new MojoFailureException("Could not load MavenProject for module: " + module, e);
-            }
-            
+        for (final MavenProject moduleProject : collectedProjects) {
             this.parseProject(logger, moduleProject, visitor);
         }
     }
