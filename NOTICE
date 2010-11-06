@@ -83,3 +83,6 @@ This project includes:
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
   xmlParserAPIs under Apache License, Version 2
 
+
+This project also includes code under copywrite of the following entities:
+  http://code.google.com/p/maven-license-plugin/

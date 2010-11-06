@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -181,6 +182,16 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     protected boolean aggregating = true;
     
     /**
+     * The {@link MessageFormat} syntax string used to generate each license line in the NOTICE file
+     * {0} - indent
+     * {1} - artifact name
+     * {2} - license name
+     * 
+     * @parameter default-value="{0}{1} under {2}"
+     */
+    protected String noticeMessage = "{0}{1} under {2}";
+    
+    /**
      * Module paths to exclude when running with aggregating=true
      *
      * @parameter
@@ -192,7 +203,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     /* (non-Javadoc)
      * @see org.apache.maven.plugin.Mojo#execute()
      */
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public final void execute() throws MojoExecutionException, MojoFailureException {
         final Log logger = this.getLog();
         
         //If aggregating skip child modules
@@ -228,8 +239,16 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         this.handleNotice(logger, finder, noticeContents);
     }
     
+    /**
+     * Called with the expected NOTICE file contents for this project.
+     */
     protected abstract void handleNotice(Log logger, ResourceFinder finder, String noticeContents) throws MojoFailureException;
     
+    /**
+     * Loads the dependency tree for the project via {@link #loadDependencyTree(MavenProject)} and then uses
+     * the {@link DependencyNodeVisitor} to load the license data. If {@link #aggregating} is enabled the method
+     * recurses on each child module.
+     */
     @SuppressWarnings("unchecked")
     protected void parseProject(Log logger, MavenProject project, DependencyNodeVisitor visitor) throws MojoExecutionException, MojoFailureException {
         logger.info("Parsing Dependencies for: " + project.getName());
@@ -255,62 +274,80 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Check if there are any unresolved artifacts in the Set. If there are print a helpful error
+     * message and then throw a {@link MojoFailureException}
+     */
     protected void checkUnresolved(Log logger, Set<Artifact> unresolvedArtifacts) throws MojoFailureException {
-        if (!unresolvedArtifacts.isEmpty()) {
-            final LicenseLookup licenseLookup = new LicenseLookup();
-            final List<ArtifactLicense> artifacts = licenseLookup.getArtifact();
-            
-            logger.error("Failed to find Licenses for the following dependencies: ");
-            for (final Artifact unresolvedArtifact : unresolvedArtifacts) {
-                logger.error("\t" + unresolvedArtifact);
-                
-                //Build LicenseLookup data model for artifacts that failed resolution
-                final ArtifactLicense artifactLicense = new ArtifactLicense();
-                artifactLicense.setGroupId(unresolvedArtifact.getGroupId());
-                artifactLicense.setArtifactId(unresolvedArtifact.getArtifactId());
-                
-                final List<MappedVersion> mappedVersions = artifactLicense.getVersion();
-                final MappedVersion mappedVersion = new MappedVersion();
-                mappedVersion.setValue(unresolvedArtifact.getVersion());
-                mappedVersions.add(mappedVersion);
-                
-                artifacts.add(artifactLicense);
-            }
-            logger.error("Try adding them to a 'licenseLookup' file.");
-            
-            final Marshaller marshaller = LicenseLookupContext.getMarshaller();
-            final String buildDir = project.getBuild().getDirectory();
-            final File mappingsfile = new File(new File(buildDir), "license-mappings.xml");
-            try {
-                FileUtils.forceMkdir(mappingsfile.getParentFile());
-            }
-            catch (IOException e) {
-                logger.warn("Failed to write stub license-mappings.xml file to: " + mappingsfile, e);
-            }
-            try {
-                marshaller.marshal(licenseLookup, mappingsfile);
-                logger.error("A stub license mapping file has been written to: " + mappingsfile);
-            }
-            catch (JAXBException e) {
-                logger.warn("Failed to write stub license-mappings.xml file to: " + mappingsfile, e);
-            }
-            
-            throw new MojoFailureException("Failed to find Licenses for " + unresolvedArtifacts.size() + " artifacts");
+        if (unresolvedArtifacts.isEmpty()) {
+            return;
         }
+        
+        final LicenseLookup licenseLookup = new LicenseLookup();
+        final List<ArtifactLicense> artifacts = licenseLookup.getArtifact();
+        
+        logger.error("Failed to find Licenses for the following dependencies: ");
+        for (final Artifact unresolvedArtifact : unresolvedArtifacts) {
+            logger.error("\t" + unresolvedArtifact);
+            
+            //Build LicenseLookup data model for artifacts that failed resolution
+            final ArtifactLicense artifactLicense = new ArtifactLicense();
+            artifactLicense.setGroupId(unresolvedArtifact.getGroupId());
+            artifactLicense.setArtifactId(unresolvedArtifact.getArtifactId());
+            
+            final List<MappedVersion> mappedVersions = artifactLicense.getVersion();
+            final MappedVersion mappedVersion = new MappedVersion();
+            mappedVersion.setValue(unresolvedArtifact.getVersion());
+            mappedVersions.add(mappedVersion);
+            
+            artifacts.add(artifactLicense);
+        }
+        logger.error("Try adding them to a 'licenseLookup' file.");
+        
+        final File buildDir = new File(project.getBuild().getDirectory());
+        final File mappingsfile = new File(buildDir, "license-mappings.xml");
+        
+        //Make sure the target directory exists
+        try {
+            FileUtils.forceMkdir(buildDir);
+        }
+        catch (IOException e) {
+            logger.warn("Failed to write stub license-mappings.xml file to: " + mappingsfile, e);
+        }
+
+        //Write the example mappings file
+        final Marshaller marshaller = LicenseLookupContext.getMarshaller();
+        try {
+            marshaller.marshal(licenseLookup, mappingsfile);
+            logger.error("A stub license mapping file has been written to: " + mappingsfile);
+        }
+        catch (JAXBException e) {
+            logger.warn("Failed to write stub license-mappings.xml file to: " + mappingsfile, e);
+        }
+        
+        throw new MojoFailureException("Failed to find Licenses for " + unresolvedArtifacts.size() + " artifacts");
     }
     
+    /**
+     * Create the generated part of the NOTICE file based on the resolved license data
+     */
     protected String generateNoticeLines(Map<String, String> resolvedLicenses) {
         final StringBuilder builder = new StringBuilder();
-        
+
+        final MessageFormat messageFormat = new MessageFormat(this.noticeMessage);
         final String indent = StringUtils.repeat(" ", this.indent);
         
         for (final Map.Entry<String, String> resolvedEntry : resolvedLicenses.entrySet()) {
-            builder.append(indent).append(resolvedEntry.getKey()).append(" under ").append(resolvedEntry.getValue()).append("\n");
+            final String line = messageFormat.format(new Object[] { indent,  resolvedEntry.getKey(), resolvedEntry.getValue()});
+            builder.append(line).append("\n");
         }
         
         return builder.toString();
     }
 
+    /**
+     * Read the template notice file into a string
+     */
     protected String readNoticeTemplate(ResourceFinder finder) throws MojoFailureException {
         final URL inputFile = finder.findResource(this.noticeTemplate);
 
@@ -329,6 +366,9 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         return noticeTemplateContents;
     }
     
+    /**
+     * Resolve the {@link File} to write the generated NOTICE file to
+     */
     protected File getNoticeOutputFile() {
         if (this.outputDir == null) {
             this.outputDir = "";
@@ -341,11 +381,14 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         return new File(outputPath, this.fileName);
     }
 
+    /**
+     * Create the {@link ResourceFinder} for the project
+     */
     @SuppressWarnings("unchecked")
     protected ResourceFinder getResourceFinder() throws MojoExecutionException {
-        final ResourceFinder finder = new ResourceFinder(project.getBasedir());
+        final ResourceFinder finder = new ResourceFinder(this.project.getBasedir());
         try {
-            final List<String> classpathElements = project.getCompileClasspathElements();
+            final List<String> classpathElements = this.project.getCompileClasspathElements();
             finder.setCompileClassPath(classpathElements);
         }
         catch (DependencyResolutionRequiredException e) {
@@ -355,7 +398,9 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         return finder;
     }
 
-
+    /**
+     * Load the dependency tree for the specified project
+     */
     protected DependencyNode loadDependencyTree(MavenProject project) throws MojoExecutionException {
         try {
             return this.dependencyTreeBuilder.buildDependencyTree(

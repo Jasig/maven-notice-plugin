@@ -184,7 +184,7 @@
                 <plugin>
                     <groupId>org.jasig.maven</groupId>
                     <artifactId>maven-notice-plugin</artifactId>
-                    <version>1.0.0-SNAPSHOT</version>
+                    <version>${project.version}</version>
                     <configuration>
                         <licenseLookup>
                             <param>https://source.jasig.org/licenses/license-mappings.xml</param>
@@ -235,21 +235,7 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-                <configuration>
-                    <requirements>
-                        <jdk>1.5</jdk>
-                    </requirements>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
-
+    
     <profiles>
         <profile>
             <id>jaxb</id>

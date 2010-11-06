@@ -25,7 +25,7 @@
   <artifactId>notice</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>license project info</name>
+  <name>Notice Plugin Test</name>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
