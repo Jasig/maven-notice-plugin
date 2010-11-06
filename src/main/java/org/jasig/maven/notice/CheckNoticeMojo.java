@@ -30,13 +30,13 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.jasig.maven.notice.util.ResourceFinder;
 
+import difflib.ChangeDelta;
 import difflib.Chunk;
 import difflib.DeleteDelta;
 import difflib.Delta;
 import difflib.DiffUtils;
 import difflib.InsertDelta;
 import difflib.Patch;
-import edu.emory.mathcs.backport.java.util.LinkedList;
 
 /**
  * Checks the NOTICE file to make sure it matches the expected output
@@ -89,7 +89,6 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
         logger.info("NOTICE file is up to date");
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected String generateDiff(Log logger, String noticeContents, final String existingNoticeContents) {
         final StringBuilder diffText = new StringBuilder();
         try {
@@ -101,28 +100,39 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
                 final Chunk original = delta.getOriginal();
                 final Chunk revised = delta.getRevised();
                 
-                char changeType = '?';
-                char changeDirection = '?'; 
-                List lines;
+                final char changeType;
                 if (delta instanceof DeleteDelta) {
                     changeType = 'd';
-                    changeDirection = '<';
-                    lines = original.getLines();
                 }
                 else if (delta instanceof InsertDelta) {
                     changeType = 'a';
-                    changeDirection = '>';
-                    lines = revised.getLines();
+                }
+                else if (delta instanceof ChangeDelta) {
+                    changeType = 'c';
                 }
                 else {
-                    lines = new LinkedList();
-                    lines.addAll(original.getLines());
-                    lines.addAll(revised.getLines());
+                    changeType = '?';
                 }
                 
-                diffText.append(original.getPosition()).append(changeType).append(revised.getPosition()).append("\n");
-                for (final Object line : lines) {
-                    diffText.append(changeDirection).append(" ").append(line).append("\n");
+                //Write out the diff line info
+                diffText.append(original.getPosition() + 1);
+                if (original.getSize() > 1) {
+                    diffText.append(",").append(original.getPosition() + original.getSize());
+                }
+                diffText.append(changeType);
+                diffText.append(revised.getPosition() + 1);
+                if (revised.getSize() > 1) {
+                    diffText.append(",").append(revised.getPosition() + revised.getSize());
+                }
+                diffText.append("\n");
+
+                //Write out the incoming and outgoing changes
+                for (final Object line : original.getLines()) {
+                    diffText.append("< ").append(line).append("\n");
+                }
+                diffText.append("---\n");
+                for (final Object line : revised.getLines()) {
+                    diffText.append("> ").append(line).append("\n");
                 }
             }
         }
