@@ -45,7 +45,7 @@ import edu.emory.mathcs.backport.java.util.LinkedList;
  * @version $Revision$
  * @goal check
  * @threadSafe true
- * @requiresDependencyResolution test
+ * @requiresDependencyCollection test
  */
 public class CheckNoticeMojo extends AbstractNoticeMojo {
     

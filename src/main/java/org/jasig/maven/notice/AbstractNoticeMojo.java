@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -45,9 +46,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
+import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 import org.jasig.maven.notice.lookup.ArtifactLicense;
 import org.jasig.maven.notice.lookup.LicenseLookup;
 import org.jasig.maven.notice.lookup.MappedVersion;
@@ -170,9 +173,16 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     protected int indent = 2;
     
     /**
-     * @parameter expression="${encoding}" default-value="${project.build.sourceEncoding}"
+     * @parameter default-value="${project.build.sourceEncoding}"
      */
     protected String encoding = "UTF-8";
+    
+    /**
+     * Set if the NOTICE file should aggregate all dependencies from all child modules.
+     * 
+     * @parameter default-value="true"
+     */
+    protected boolean aggregating = true;
     
     
     /* (non-Javadoc)
@@ -181,7 +191,10 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         final Log logger = this.getLog();
         
-        final DependencyNode tree = this.loadDependencyTree();
+        //If aggregating skip child modules
+        if (aggregating && !this.project.isExecutionRoot()) {
+            return;
+        }
         
         final ResourceFinder finder = this.getResourceFinder();
         
@@ -194,7 +207,8 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
                 licenseLookupHelper, remoteArtifactRepositories, 
                 this.mavenProjectBuilder, this.localRepository);
 
-        tree.accept(visitor);
+
+        this.parseProject(logger, this.project, visitor);
      
         //Check for any unresolved artifacts
         final Set<Artifact> unresolvedArtifacts = visitor.getUnresolvedArtifacts();
@@ -212,6 +226,33 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     }
     
     protected abstract void handleNotice(Log logger, ResourceFinder finder, String noticeContents) throws MojoFailureException;
+    
+    protected void parseProject(Log logger, MavenProject project, DependencyNodeVisitor visitor) throws MojoExecutionException, MojoFailureException {
+        logger.info("Parsing Dependencies for: " + project.getName());
+        
+        //Load and parse immediate dependencies
+        final DependencyNode tree = this.loadDependencyTree(project);
+        tree.accept(visitor);
+        
+        //If not aggregating don't recurse on modules
+        if (!this.aggregating) {
+            return;
+        }
+        
+        //Find all sub-modules for the project
+        for (final String module : project.getModel().getModules()) {
+            final File moduleFile = new File(new File(this.project.getBasedir(), module), "pom.xml");
+            MavenProject moduleProject;
+            try {
+                moduleProject = this.mavenProjectBuilder.build(moduleFile, localRepository, null);
+            }
+            catch (ProjectBuildingException e) {
+                throw new MojoFailureException("Could not load MavenProject for module: " + module, e);
+            }
+            
+            this.parseProject(logger, moduleProject, visitor);
+        }
+    }
 
     protected void checkUnresolved(Log logger, Set<Artifact> unresolvedArtifacts) throws MojoFailureException {
         if (!unresolvedArtifacts.isEmpty()) {
@@ -239,6 +280,12 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
             final Marshaller marshaller = LicenseLookupContext.getMarshaller();
             final String buildDir = project.getBuild().getDirectory();
             final File mappingsfile = new File(new File(buildDir), "license-mappings.xml");
+            try {
+                FileUtils.forceMkdir(mappingsfile.getParentFile());
+            }
+            catch (IOException e) {
+                logger.warn("Failed to write stub license-mappings.xml file to: " + mappingsfile, e);
+            }
             try {
                 marshaller.marshal(licenseLookup, mappingsfile);
                 logger.error("A stub license mapping file has been written to: " + mappingsfile);
@@ -308,15 +355,15 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     }
 
 
-    protected DependencyNode loadDependencyTree() throws MojoExecutionException {
+    protected DependencyNode loadDependencyTree(MavenProject project) throws MojoExecutionException {
         try {
             return this.dependencyTreeBuilder.buildDependencyTree(
-                    this.project, this.localRepository, 
+                    project, this.localRepository, 
                     this.artifactFactory, this.artifactMetadataSource, 
                     null, this.artifactCollector);
         }
         catch (DependencyTreeBuilderException e) {
-            throw new MojoExecutionException( "Cannot build project dependency tree", e );
+            throw new MojoExecutionException("Cannot build project dependency tree for project: " + project, e );
         }
     }
 }

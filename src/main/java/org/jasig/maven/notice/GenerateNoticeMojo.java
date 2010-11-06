@@ -34,7 +34,8 @@ import org.jasig.maven.notice.util.ResourceFinder;
  * @version $Revision$
  * @goal generate
  * @threadSafe true
- * @requiresDependencyResolution test
+ * @requiresDependencyCollection test
+ * @inheritByDefault false
  */
 public class GenerateNoticeMojo extends AbstractNoticeMojo {
     
@@ -43,6 +44,7 @@ public class GenerateNoticeMojo extends AbstractNoticeMojo {
         
         //Write out the generated notice file
         final File outputFile = getNoticeOutputFile();
+        outputFile.getParentFile().mkdirs();
         try {
             FileUtils.writeStringToFile(outputFile, noticeContents, this.encoding);
         }

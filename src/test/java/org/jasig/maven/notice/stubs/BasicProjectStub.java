@@ -211,4 +211,10 @@ public abstract class BasicProjectStub
         return pluginMgmt;
     }
 
+    @Override
+    public boolean isExecutionRoot() {
+        return true;
+    }
+
+    
 }

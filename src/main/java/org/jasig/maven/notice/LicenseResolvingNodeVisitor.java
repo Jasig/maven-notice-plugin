@@ -19,6 +19,7 @@
 
 package org.jasig.maven.notice;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.jasig.maven.notice.lookup.ArtifactLicense;
 class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
     private final Map<String, String> resolvedLicenses = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
     private final Set<Artifact> unresolvedArtifacts = new TreeSet<Artifact>();
+    private final Set<Artifact> visitedArtifacts = new HashSet<Artifact>();
     
     private final Log logger;
     private final LicenseLookupHelper licenseLookupHelper;
@@ -74,6 +76,11 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
     public boolean visit(DependencyNode node) {
         if (DependencyNode.INCLUDED == node.getState()) {
             final Artifact artifact = node.getArtifact();
+            
+            //Only resolve an artifact once, if already visited just skip it
+            if (!visitedArtifacts.add(artifact)) {
+                return true;
+            }
             
             String name = null;
             String licenseName = null;

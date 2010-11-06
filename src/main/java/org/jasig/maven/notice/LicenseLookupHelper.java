@@ -95,13 +95,23 @@ public class LicenseLookupHelper {
         //Search the mapped versions lists for a matching version
         for (final Entry<List<MappedVersion>, ArtifactLicense> versionEntry : artifactVersions.entrySet()) {
             final List<MappedVersion> versions = versionEntry.getKey();
-            for (final MappedVersion version :versions) {
-                final boolean matches = this.compareVersions(version, artifactVersion);
-                if (matches) {
-                    final ArtifactLicense artifactLicense = versionEntry.getValue();
-                    this.logger.debug("Found " + artifactLicense + " for: " + groupId + ":" + artifactId + ":" + artifactVersion);
-                    return artifactLicense;
+            
+            //If no versions are specified for an artifact all versions match 
+            boolean matches = versions.size() == 0;
+            
+            if (!matches) {
+                for (final MappedVersion version : versions) {
+                    matches = this.compareVersions(version, artifactVersion);
+                    if (matches) {
+                        break;
+                    }
                 }
+            }
+            
+            if (matches) {
+                final ArtifactLicense artifactLicense = versionEntry.getValue();
+                this.logger.debug("Found " + artifactLicense + " for: " + groupId + ":" + artifactId + ":" + artifactVersion);
+                return artifactLicense;
             }
         }
         
