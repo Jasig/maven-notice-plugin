@@ -17,19 +17,19 @@ under the License.
 
 This project includes:
   Backport of JSR 166 under Public Domain
-  bcel under Apache License, Version 2
+  bcel under Apache License, Version 2.0
   classworlds under BSD Style License
-  CLI under Apache License, Version 2
+  CLI under Apache License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
-  commons-beanutils under Apache License, Version 2
-  commons-collections under Apache License, Version 2
-  commons-digester under Apache License, Version 2
-  Default Plexus Container under Apache License, Version 2
+  commons-beanutils under Apache License, Version 2.0
+  commons-collections under Apache License, Version 2.0
+  commons-digester under Apache License, Version 2.0
+  Default Plexus Container under Apache License, Version 2.0
   Doxia :: Logging API under The Apache Software License, Version 2.0
-  Doxia Sink API under Apache License, Version 2
+  Doxia Sink API under Apache License, Version 2.0
   Doxia Sitetools :: Decoration Model under The Apache Software License, Version 2.0
   HttpUnit under BSD Style License
-  jakarta-regexp under Apache License, Version 2
+  jakarta-regexp under Apache License, Version 2.0
   java-diff-utils under The Apache Software License, Version 2.0
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JAXB API bundle for GlassFish V3 under CDDL 1.0 or GPL2 w/ CPE
@@ -41,7 +41,7 @@ This project includes:
   jsch under BSD
   JTidy under Java HTML Tidy License
   JUnit under Common Public License Version 1.0
-  junit-addons under Apache License, Version 2
+  junit-addons under Apache License, Version 2.0
   Lang under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   Maven under The Apache Software License, Version 2.0
@@ -68,20 +68,20 @@ This project includes:
   Maven Wagon File Provider under The Apache Software License, Version 2.0
   Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
   Maven Wagon SSH Provider under The Apache Software License, Version 2.0
-  Neko HTML under Apache License, Version 2
-  oro under Apache License, Version 2
-  Plexus Archiver Component under Apache License, Version 2
+  Neko HTML under Apache License, Version 2.0
+  oro under Apache License, Version 2.0
+  Plexus Archiver Component under Apache License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
-  Plexus Default Interactivity Handler under Apache License, Version 2
-  Plexus Digest / Hashcode Components under Apache License, Version 2
-  Plexus I18N Component under Apache License, Version 2
+  Plexus Default Interactivity Handler under Apache License, Version 2.0
+  Plexus Digest / Hashcode Components under Apache License, Version 2.0
+  Plexus I18N Component under Apache License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
-  servlet-api under UNKNOWN
+  servlet-api under Commons Development and Distribution License, Version 1.0
   Streaming API for XML under GNU General Public Library or COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
   Validator under The Apache Software License, Version 2.0
-  xercesImpl under Apache License, Version 2
+  xercesImpl under Apache License, Version 2.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
-  xmlParserAPIs under Apache License, Version 2
+  xmlParserAPIs under Apache License, Version 2.0
 
 
 This project also includes code under copywrite of the following entities:
