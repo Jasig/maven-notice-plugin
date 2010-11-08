@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,6 @@ import javax.xml.bind.Marshaller;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -63,6 +63,8 @@ import org.jasig.maven.notice.util.ResourceFinder;
  * @version $Revision$
  */
 public abstract class AbstractNoticeMojo extends AbstractMojo {
+    
+    /* DI configuration of Maven components needed for the plugin */
 
     /**
      * The Maven Project.
@@ -127,8 +129,11 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      */
     protected MavenProjectBuilder mavenProjectBuilder;
     
+    /* Mojo Configuration Properties */
+    
     /**
-     * License Lookup XML files / URLs.
+     * License Lookup XML files / URLs. Lookups are done in-order with
+     * files being checked top to bottom for matches
      *
      * @parameter
      */
@@ -151,7 +156,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     /**
      * Output location for the generated NOTICE file
      *
-     * @parameter
+     * @parameter default-value="${basedir}"
      */
     protected String outputDir = "";
     
@@ -161,13 +166,6 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      * @parameter default-value="NOTICE"
      */
     protected String fileName = "NOTICE";
-    
-    /**
-     * Level of indentation to use when generating notice lines
-     *
-     * @parameter default-value="2"
-     */
-    protected int indent = 2;
     
     /**
      * @parameter default-value="${project.build.sourceEncoding}"
@@ -182,21 +180,21 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     protected boolean aggregating = true;
     
     /**
-     * The {@link MessageFormat} syntax string used to generate each license line in the NOTICE file
-     * {0} - indent
-     * {1} - artifact name
-     * {2} - license name
+     * The {@link MessageFormat} syntax string used to generate each license line in the NOTICE file<br/>
+     * {0} - artifact name<br/>
+     * {1} - license name<br/>
      * 
-     * @parameter default-value="{0}{1} under {2}"
+     * @parameter default-value="  {0} under {1}"
      */
-    protected String noticeMessage = "{0}{1} under {2}";
+    protected String noticeMessage = "  {0} under {1}";
+    private MessageFormat parsedNoticeMessage;
     
     /**
-     * Module paths to exclude when running with aggregating=true
+     * ArtifactIds of child modules to exclude
      *
      * @parameter
      */
-    protected String[] excludedModulePaths = new String[0];
+    protected Set<String> excludedModules = new LinkedHashSet<String>();
     
     
     
@@ -236,6 +234,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         //Replace the template placeholder with the generated notice data
         final String noticeContents = noticeTemplateContents.replaceAll(Pattern.quote(this.noticeTemplatePlaceholder), noticeLines);        
         
+        //Let the subclass deal with the generated NOTICE file
         this.handleNotice(logger, finder, noticeContents);
     }
     
@@ -270,6 +269,12 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         
         //Find all sub-modules for the project
         for (final MavenProject moduleProject : collectedProjects) {
+            final String artifactId = moduleProject.getArtifactId();
+            if (this.excludedModules.contains(artifactId)) {
+                logger.info("Skipping aggregation of child module " +  moduleProject.getName() + " with excluded artifactId: " + artifactId);
+                continue;
+            }
+            
             this.parseProject(logger, moduleProject, visitor);
         }
     }
@@ -334,15 +339,29 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     protected String generateNoticeLines(Map<String, String> resolvedLicenses) {
         final StringBuilder builder = new StringBuilder();
 
-        final MessageFormat messageFormat = new MessageFormat(this.noticeMessage);
-        final String indent = StringUtils.repeat(" ", this.indent);
+        
+        final MessageFormat messageFormat = getNoticeMessageFormat();
         
         for (final Map.Entry<String, String> resolvedEntry : resolvedLicenses.entrySet()) {
-            final String line = messageFormat.format(new Object[] { indent,  resolvedEntry.getKey(), resolvedEntry.getValue()});
+            final String line = messageFormat.format(new Object[] { resolvedEntry.getKey(), resolvedEntry.getValue()});
             builder.append(line).append("\n");
         }
         
         return builder.toString();
+    }
+
+    /**
+     * Get the {@link MessageFormat} of the configured {@link #noticeMessage}
+     */
+    protected final MessageFormat getNoticeMessageFormat() {
+        final MessageFormat messageFormat;
+        synchronized (this) {
+            if (this.parsedNoticeMessage == null || !this.noticeMessage.equals(this.parsedNoticeMessage.toPattern())) {
+                this.parsedNoticeMessage = new MessageFormat(this.noticeMessage);
+            }
+            messageFormat = this.parsedNoticeMessage;
+        }
+        return messageFormat;
     }
 
     /**

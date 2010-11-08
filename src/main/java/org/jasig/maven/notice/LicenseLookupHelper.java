@@ -26,11 +26,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -49,7 +53,14 @@ import org.jasig.maven.notice.util.ResourceFinder;
  * @version $Revision$
  */
 public class LicenseLookupHelper {
-    private final Map<String, Map<List<MappedVersion>, ArtifactLicense>> lookupCache = new LinkedHashMap<String, Map<List<MappedVersion>,ArtifactLicense>>();
+    /**
+     * Cache parse results for the 20 most recently used LicenseLookup files
+     */
+    @SuppressWarnings("unchecked")
+    private static final Map<String, LicenseLookup> LICENSE_LOOKUP_CACHE = new LRUMap(20);
+    private static final ReadWriteLock LICENSE_LOOKUP_CACHE_LOCK = new ReentrantReadWriteLock();
+    
+    private final Map<String, Map<List<MappedVersion>, ArtifactLicense>> mergedLicenseLookup = new LinkedHashMap<String, Map<List<MappedVersion>,ArtifactLicense>>();
     private final Log logger;
     private final ResourceFinder resourceFinder;
 
@@ -63,7 +74,8 @@ public class LicenseLookupHelper {
             licenseLookupFiles = new String[0];
         }
         
-        for (final String licenseLookupFile : licenseLookupFiles) {
+        for (int index = licenseLookupFiles.length - 1; index >= 0; index--) {
+            final String licenseLookupFile = licenseLookupFiles[index];
             final LicenseLookup licenseLookup = this.loadLicenseLookup(unmarshaller, licenseLookupFile);
             
             for (final ArtifactLicense artifactLicense : licenseLookup.getArtifact()) {
@@ -71,10 +83,10 @@ public class LicenseLookupHelper {
                 final String artifactId = artifactLicense.getArtifactId();
                 final String artifactKey = getArtifactKey(groupId, artifactId);
                 
-                Map<List<MappedVersion>, ArtifactLicense> artifactVersions = this.lookupCache.get(artifactKey);
+                Map<List<MappedVersion>, ArtifactLicense> artifactVersions = this.mergedLicenseLookup.get(artifactKey);
                 if (artifactVersions == null) {
                     artifactVersions = new LinkedHashMap<List<MappedVersion>, ArtifactLicense>();
-                    this.lookupCache.put(artifactKey, artifactVersions);
+                    this.mergedLicenseLookup.put(artifactKey, artifactVersions);
                 }
                 
                 final List<MappedVersion> version = artifactLicense.getVersion();
@@ -87,7 +99,7 @@ public class LicenseLookupHelper {
     public ArtifactLicense lookupLicenseMapping(String groupId, String artifactId, ArtifactVersion artifactVersion) {
         //Find license info mapped to the group/artifact
         final String artifactKey = getArtifactKey(groupId, artifactId);
-        final Map<List<MappedVersion>, ArtifactLicense> artifactVersions = this.lookupCache.get(artifactKey);
+        final Map<List<MappedVersion>, ArtifactLicense> artifactVersions = this.mergedLicenseLookup.get(artifactKey);
         if (artifactVersions == null) {
             return null;
         }
@@ -137,23 +149,58 @@ public class LicenseLookupHelper {
 
     protected LicenseLookup loadLicenseLookup(Unmarshaller unmarshaller, String licenseLookupFile) throws MojoFailureException {
         final URL licenseLookupUrl = resourceFinder.findResource(licenseLookupFile);
-        logger.info("Loading license lookup mappings from '" + licenseLookupUrl + "'");
 
-        InputStream lookupStream = null;
-        try {
-            lookupStream = licenseLookupUrl.openStream();
-            return (LicenseLookup)unmarshaller.unmarshal(lookupStream);
-        }
-        catch (IOException e) {
-            new MojoFailureException("Failed to read '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
-        }
-        catch (JAXBException e) {
-            new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
-        }
-        finally {
-            IOUtils.closeQuietly(lookupStream);
+        //Try loading the LicenseLookup from cache
+        final Lock readLock = LICENSE_LOOKUP_CACHE_LOCK.readLock();
+        LicenseLookup licenseLookup = this.loadLicenseLookup(unmarshaller, licenseLookupFile, licenseLookupUrl, readLock, false);
+        if (licenseLookup != null) {
+            return licenseLookup;
         }
         
-        throw new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'");
+        //Must not have been in the cache, grab the write lock and check again
+        final Lock writeLock = LICENSE_LOOKUP_CACHE_LOCK.writeLock();
+        return loadLicenseLookup(unmarshaller, licenseLookupFile, licenseLookupUrl, writeLock, true);
+    }
+
+    protected LicenseLookup loadLicenseLookup(Unmarshaller unmarshaller, String licenseLookupFile, URL licenseLookupUrl, Lock lock, boolean create) throws MojoFailureException {
+        final String licenseLookupKey = licenseLookupUrl.toString();
+        
+        lock.lock();
+        try {
+            //Look in the cache to see if the lookup file has already been parsed
+            LicenseLookup licenseLookup = LICENSE_LOOKUP_CACHE.get(licenseLookupKey);
+            if (licenseLookup != null) {
+                logger.info("Loading license lookup mappings from '" + licenseLookupUrl + "' (cached)");
+                return licenseLookup;
+            }
+            
+            //Cache miss, check if we should parse the file, return null if not
+            if (!create) {
+                return null;
+            }
+        
+            logger.info("Loading license lookup mappings from '" + licenseLookupUrl + "'");
+            InputStream lookupStream = null;
+            try {
+                lookupStream = licenseLookupUrl.openStream();
+                licenseLookup = (LicenseLookup)unmarshaller.unmarshal(lookupStream);
+                LICENSE_LOOKUP_CACHE.put(licenseLookupKey, licenseLookup);
+                return licenseLookup;
+            }
+            catch (IOException e) {
+                new MojoFailureException("Failed to read '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
+            }
+            catch (JAXBException e) {
+                new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
+            }
+            finally {
+                IOUtils.closeQuietly(lookupStream);
+            }
+            
+            throw new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'");
+        }
+        finally {
+            lock.unlock();
+        }
     }
 }
