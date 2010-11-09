@@ -27,6 +27,7 @@ This project includes:
   java-diff-utils under The Apache Software License, Version 2.0
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JAXB API bundle for GlassFish V3 under CDDL 1.0 or GPL2 w/ CPE
+  JAXB RI under CDDL 1.0 or GPL2 w/ CPE
   JAXB2 Basics - Runtime under BSD-Style License
   jsch under BSD
   JUnit under Common Public License Version 1.0
