@@ -188,16 +188,14 @@ public class LicenseLookupHelper {
                 return licenseLookup;
             }
             catch (IOException e) {
-                new MojoFailureException("Failed to read '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
+                throw new MojoFailureException("Failed to read '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
             }
             catch (JAXBException e) {
-                new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
+                throw new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'", e);
             }
             finally {
                 IOUtils.closeQuietly(lookupStream);
             }
-            
-            throw new MojoFailureException("Failed to parse '" + licenseLookupFile + "' from '" + licenseLookupUrl + "'");
         }
         finally {
             lock.unlock();

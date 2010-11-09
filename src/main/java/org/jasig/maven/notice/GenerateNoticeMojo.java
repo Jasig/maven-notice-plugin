@@ -42,9 +42,15 @@ public class GenerateNoticeMojo extends AbstractNoticeMojo {
     @Override
     protected void handleNotice(Log logger, ResourceFinder finder, String noticeContents) throws MojoFailureException {
         
-        //Write out the generated notice file
         final File outputFile = getNoticeOutputFile();
-        outputFile.getParentFile().mkdirs();
+        try {
+            FileUtils.forceMkdir(outputFile.getParentFile());
+        }
+        catch (IOException e) {
+            throw new MojoFailureException("Failed to create directory for NOTICE File: " + outputFile.getParent(), e);
+        }
+        
+        //Write out the generated notice file
         try {
             FileUtils.writeStringToFile(outputFile, noticeContents, this.encoding);
         }

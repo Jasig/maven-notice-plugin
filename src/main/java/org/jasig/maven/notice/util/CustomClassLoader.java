@@ -33,11 +33,6 @@ final class CustomClassLoader extends URLClassLoader {
         super(new URL[0], parent);
     }
 
-    @Override
-    public void addURL(URL url) {
-        super.addURL(url);
-    }
-
     public void addFolder(String absolutePath) {
         addFolder(new File(absolutePath));
     }
