@@ -155,7 +155,6 @@
                 <plugin>
                     <groupId>org.jasig.maven</groupId>
                     <artifactId>maven-notice-plugin</artifactId>
-                    <version>${project.version}</version>
                     <configuration>
                         <noticeTemplate>NOTICE.template</noticeTemplate>
                     </configuration>
