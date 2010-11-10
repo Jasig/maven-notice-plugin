@@ -300,6 +300,15 @@
 
     <profiles>
         <profile>
+            <id>ci-local-site</id>
+            <distributionManagement>
+                <site>
+                    <id>ci-local-site</id>
+                    <url>${jasig-site-ci-dist-base}${project-site-path}</url>
+                </site>
+            </distributionManagement>
+        </profile>
+        <profile>
             <id>jaxb</id>
             <activation>
                 <jdk>1.5</jdk>
