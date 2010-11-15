@@ -17,6 +17,7 @@
 package org.jasig.maven.notice.util;
 
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -28,12 +29,12 @@ import java.util.List;
  * <b>Author:</b> Mathieu Carbou (mathieu.carbou@gmail.com)
  */
 public final class ResourceFinder {
-    private final File basedir;
+    private final MavenProject project;
     private CustomClassLoader compileClassPath;
     private CustomClassLoader pluginClassPath;
 
-    public ResourceFinder(File basedir) {
-        this.basedir = basedir;
+    public ResourceFinder(MavenProject project) {
+        this.project = project;
     }
 
     public void setCompileClassPath(List<String> classpath) {
@@ -63,7 +64,7 @@ public final class ResourceFinder {
      */
     public URL findResource(String resource) throws MojoFailureException {
         // first search relatively to the base directory
-        URL res = toURL(new File(basedir, resource));
+        URL res = this.searchProjectTree(project, resource);
         if (res != null) {
             return res;
         }
@@ -99,6 +100,22 @@ public final class ResourceFinder {
         }
 
         throw new MojoFailureException("Resource not found in file system, classpath or URL: " + resource);
+    }
+    
+    private URL searchProjectTree(MavenProject project, String resource) {
+        // first search relatively to the base directory
+        URL res = toURL(new File(project.getBasedir(), resource));
+        if (res != null) {
+            return res;
+        }
+        
+        //Look up the project tree to try and find a match as well.
+        final MavenProject parent = project.getParent();
+        if (!project.isExecutionRoot() && parent != null && parent.getBasedir() != null) {
+            return this.searchProjectTree(parent, resource);
+        }
+        
+        return null;
     }
 
     private URL toURL(File file) {

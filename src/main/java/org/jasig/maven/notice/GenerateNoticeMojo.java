@@ -24,7 +24,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
 import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
@@ -35,13 +34,11 @@ import org.jasig.maven.notice.util.ResourceFinder;
  * @goal generate
  * @threadSafe true
  * @requiresDependencyCollection test
- * @inheritByDefault false
  */
 public class GenerateNoticeMojo extends AbstractNoticeMojo {
     
     @Override
-    protected void handleNotice(Log logger, ResourceFinder finder, String noticeContents) throws MojoFailureException {
-        
+    protected void handleNotice(ResourceFinder finder, String noticeContents) throws MojoFailureException {
         final File outputFile = getNoticeOutputFile();
         try {
             FileUtils.forceMkdir(outputFile.getParentFile());

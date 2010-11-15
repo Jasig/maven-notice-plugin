@@ -50,7 +50,9 @@ import difflib.Patch;
 public class CheckNoticeMojo extends AbstractNoticeMojo {
     
     @Override
-    protected void handleNotice(Log logger, ResourceFinder finder, String noticeContents) throws MojoFailureException {
+    protected void handleNotice(ResourceFinder finder, String noticeContents) throws MojoFailureException {
+        final Log logger = this.getLog();
+        
         //Write out the generated notice file
         final File outputFile = getNoticeOutputFile();
 

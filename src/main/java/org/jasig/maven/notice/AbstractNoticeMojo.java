@@ -173,11 +173,18 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     protected String encoding = "UTF-8";
     
     /**
-     * Set if the NOTICE file should aggregate all dependencies from all child modules.
+     * Set if the NOTICE file should include all dependencies from all child modules.
      * 
      * @parameter default-value="true"
      */
-    protected boolean aggregating = true;
+    protected boolean includeChildDependencies = true;
+    
+    /**
+     * Set if a NOTICE file should be generated for each child module
+     * 
+     * @parameter default-value="true"
+     */
+    protected boolean generateChildNotices = true;
     
     /**
      * The {@link MessageFormat} syntax string used to generate each license line in the NOTICE file<br/>
@@ -203,9 +210,9 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      */
     public final void execute() throws MojoExecutionException, MojoFailureException {
         final Log logger = this.getLog();
-        
-        //If aggregating skip child modules
-        if (aggregating && !this.project.isExecutionRoot()) {
+
+        //Check if NOTICE for child modules should be generated
+        if (!this.generateChildNotices && !this.project.isExecutionRoot()) {
             return;
         }
         
@@ -220,11 +227,11 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
                 licenseLookupHelper, remoteArtifactRepositories, 
                 this.mavenProjectBuilder, this.localRepository);
 
-        this.parseProject(logger, this.project, visitor);
+        this.parseProject(this.project, visitor);
      
         //Check for any unresolved artifacts
         final Set<Artifact> unresolvedArtifacts = visitor.getUnresolvedArtifacts();
-        this.checkUnresolved(logger, unresolvedArtifacts);
+        this.checkUnresolved(unresolvedArtifacts);
         
         //Convert the resovled notice data into a String
         final Map<String, String> resolvedLicenses = visitor.getResolvedLicenses();
@@ -235,13 +242,13 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         final String noticeContents = noticeTemplateContents.replaceAll(Pattern.quote(this.noticeTemplatePlaceholder), noticeLines);        
         
         //Let the subclass deal with the generated NOTICE file
-        this.handleNotice(logger, finder, noticeContents);
+        this.handleNotice(finder, noticeContents);
     }
     
     /**
      * Called with the expected NOTICE file contents for this project.
      */
-    protected abstract void handleNotice(Log logger, ResourceFinder finder, String noticeContents) throws MojoFailureException;
+    protected abstract void handleNotice(ResourceFinder finder, String noticeContents) throws MojoFailureException;
     
     /**
      * Loads the dependency tree for the project via {@link #loadDependencyTree(MavenProject)} and then uses
@@ -249,15 +256,16 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      * recurses on each child module.
      */
     @SuppressWarnings("unchecked")
-    protected void parseProject(Log logger, MavenProject project, DependencyNodeVisitor visitor) throws MojoExecutionException, MojoFailureException {
+    protected void parseProject(MavenProject project, DependencyNodeVisitor visitor) throws MojoExecutionException, MojoFailureException {
+        final Log logger = this.getLog();
         logger.info("Parsing Dependencies for: " + project.getName());
         
         //Load and parse immediate dependencies
         final DependencyNode tree = this.loadDependencyTree(project);
         tree.accept(visitor);
         
-        //If not aggregating don't recurse on modules
-        if (!this.aggregating) {
+        //If not including child deps don't recurse on modules
+        if (!this.includeChildDependencies) {
             return;
         }
         
@@ -275,7 +283,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
                 continue;
             }
             
-            this.parseProject(logger, moduleProject, visitor);
+            this.parseProject(moduleProject, visitor);
         }
     }
 
@@ -283,7 +291,9 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      * Check if there are any unresolved artifacts in the Set. If there are print a helpful error
      * message and then throw a {@link MojoFailureException}
      */
-    protected void checkUnresolved(Log logger, Set<Artifact> unresolvedArtifacts) throws MojoFailureException {
+    protected void checkUnresolved(Set<Artifact> unresolvedArtifacts) throws MojoFailureException {
+        final Log logger = this.getLog();
+        
         if (unresolvedArtifacts.isEmpty()) {
             return;
         }
@@ -405,7 +415,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      */
     @SuppressWarnings("unchecked")
     protected ResourceFinder getResourceFinder() throws MojoExecutionException {
-        final ResourceFinder finder = new ResourceFinder(this.project.getBasedir());
+        final ResourceFinder finder = new ResourceFinder(this.project);
         try {
             final List<String> classpathElements = this.project.getCompileClasspathElements();
             finder.setCompileClassPath(classpathElements);

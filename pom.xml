@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.jasig.parent</groupId>
         <artifactId>jasig-parent</artifactId>
-        <version>25</version>
+        <version>26</version>
     </parent>
 
     <groupId>org.jasig.maven</groupId>
@@ -145,7 +145,6 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
                         <source>1.5</source>
@@ -153,71 +152,10 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.jasig.maven</groupId>
-                    <artifactId>maven-notice-plugin</artifactId>
-                    <configuration>
-                        <noticeTemplate>NOTICE.template</noticeTemplate>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.jvnet.jaxb2.maven2</groupId>
-                    <artifactId>maven-jaxb2-plugin</artifactId>
-                    <version>0.7.4</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>generate</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <generateDirectory>src/main/java</generateDirectory>
-                        <generatePackage>org.jasig.maven.notice.lookup</generatePackage>
-                        <removeOldOutput>false</removeOldOutput>
-                        <extension>true</extension>
-                        <args>
-                            <arg>-XtoString</arg>
-                            <arg>-Xequals</arg>
-                            <arg>-XhashCode</arg>
-                        </args>
-                        <plugins>
-                            <plugin>
-                                <groupId>org.jvnet.jaxb2_commons</groupId>
-                                <artifactId>jaxb2-basics</artifactId>
-                                <version>${jaxb2basicsVersion}</version>
-                            </plugin>
-                        </plugins>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-xjc</artifactId>
-                            <version>${jaxbXjcVersion}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                	<groupId>org.apache.maven.plugins</groupId>
                 	<artifactId>maven-plugin-plugin</artifactId>
                 	<version>2.6</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.mycila.maven-license-plugin</groupId>
-                    <artifactId>maven-license-plugin</artifactId>
-                    <configuration>
-                        <excludes>
-                            <exclude>NOTICE</exclude>
-                            <exclude>**/NOTICE.expected</exclude>
-                            <exclude>**/NOTICE.template</exclude>
-                            <exclude>**/sun-jaxb.episode</exclude>
-                            <exclude>LICENSE</exclude>
-                            <exclude>src/main/java/org/jasig/maven/notice/util/CustomClassLoader.java</exclude>
-                            <exclude>src/main/java/org/jasig/maven/notice/util/ResourceFinder.java</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <configuration>
                         <reportPlugins>
@@ -293,6 +231,65 @@
                             </plugin>
                         </reportPlugins>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.mycila.maven-license-plugin</groupId>
+                    <artifactId>maven-license-plugin</artifactId>
+                    <configuration>
+                        <excludes>
+                            <exclude>NOTICE</exclude>
+                            <exclude>**/NOTICE.expected</exclude>
+                            <exclude>**/NOTICE.template</exclude>
+                            <exclude>**/sun-jaxb.episode</exclude>
+                            <exclude>LICENSE</exclude>
+                            <exclude>src/main/java/org/jasig/maven/notice/util/CustomClassLoader.java</exclude>
+                            <exclude>src/main/java/org/jasig/maven/notice/util/ResourceFinder.java</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jasig.maven</groupId>
+                    <artifactId>maven-notice-plugin</artifactId>
+                    <configuration>
+                        <noticeTemplate>NOTICE.template</noticeTemplate>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jvnet.jaxb2.maven2</groupId>
+                    <artifactId>maven-jaxb2-plugin</artifactId>
+                    <version>0.7.4</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <generateDirectory>src/main/java</generateDirectory>
+                        <generatePackage>org.jasig.maven.notice.lookup</generatePackage>
+                        <removeOldOutput>false</removeOldOutput>
+                        <extension>true</extension>
+                        <args>
+                            <arg>-XtoString</arg>
+                            <arg>-Xequals</arg>
+                            <arg>-XhashCode</arg>
+                        </args>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.jvnet.jaxb2_commons</groupId>
+                                <artifactId>jaxb2-basics</artifactId>
+                                <version>${jaxb2basicsVersion}</version>
+                            </plugin>
+                        </plugins>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.xml.bind</groupId>
+                            <artifactId>jaxb-xjc</artifactId>
+                            <version>${jaxbXjcVersion}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
