@@ -86,10 +86,11 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
             String licenseName = null;
             
             //Look for a matching mapping first
-            final ArtifactLicense licenseMapping = this.loadLicenseMapping(artifact);
-            if (licenseMapping != null) {
-                name = StringUtils.trimToNull(licenseMapping.getName());
-                licenseName = StringUtils.trimToNull(licenseMapping.getLicense());
+            final ResolvedLicense resolvedLicense = this.loadLicenseMapping(artifact);
+            if (resolvedLicense != null && resolvedLicense.getVersionType() != null) {
+                final ArtifactLicense artifactLicense = resolvedLicense.getArtifactLicense();
+                name = StringUtils.trimToNull(artifactLicense.getName());
+                licenseName = StringUtils.trimToNull(artifactLicense.getLicense());
             }
 
             //If name or license are still null try loading from the project
@@ -122,6 +123,17 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
                 }
             }
             
+            //Try fall-back match for name & license, hitting this implies the resolved license was an all-versions match
+            if (resolvedLicense != null && (licenseName == null || name == null)) {
+                final ArtifactLicense artifactLicense = resolvedLicense.getArtifactLicense();
+                if (name == null) {
+                    name = StringUtils.trimToNull(artifactLicense.getName());
+                }
+                if (licenseName == null) {
+                    licenseName = StringUtils.trimToNull(artifactLicense.getLicense());
+                }
+            }
+            
             //If no name is found fall back to groupId:artifactId
             if (name == null) {
                 name = artifact.getGroupId() + ":" + artifact.getArtifactId();
@@ -138,12 +150,12 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
         return true;
     }
 
-    protected ArtifactLicense loadLicenseMapping(final Artifact artifact) {
+    protected ResolvedLicense loadLicenseMapping(final Artifact artifact) {
         final String groupId = artifact.getGroupId();
         final String artifactId = artifact.getArtifactId();
         final DefaultArtifactVersion version = new DefaultArtifactVersion(artifact.getVersion());
-        final ArtifactLicense licenseMapping = licenseLookupHelper.lookupLicenseMapping(groupId, artifactId, version);
-        return licenseMapping;
+        final ResolvedLicense resolvedLicense = licenseLookupHelper.lookupLicenseMapping(groupId, artifactId, version);
+        return resolvedLicense;
     }
 
     protected MavenProject loadProject(final Artifact artifact) {

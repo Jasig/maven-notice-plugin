@@ -43,6 +43,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.jasig.maven.notice.lookup.ArtifactLicense;
 import org.jasig.maven.notice.lookup.LicenseLookup;
 import org.jasig.maven.notice.lookup.MappedVersion;
+import org.jasig.maven.notice.lookup.VersionType;
 import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
@@ -74,8 +75,7 @@ public class LicenseLookupHelper {
             licenseLookupFiles = new String[0];
         }
         
-        for (int index = licenseLookupFiles.length - 1; index >= 0; index--) {
-            final String licenseLookupFile = licenseLookupFiles[index];
+        for (final String licenseLookupFile : licenseLookupFiles) {
             final LicenseLookup licenseLookup = this.loadLicenseLookup(unmarshaller, licenseLookupFile);
             
             for (final ArtifactLicense artifactLicense : licenseLookup.getArtifact()) {
@@ -96,7 +96,7 @@ public class LicenseLookupHelper {
         }
     }
     
-    public ArtifactLicense lookupLicenseMapping(String groupId, String artifactId, ArtifactVersion artifactVersion) {
+    public ResolvedLicense lookupLicenseMapping(String groupId, String artifactId, ArtifactVersion artifactVersion) {
         //Find license info mapped to the group/artifact
         final String artifactKey = getArtifactKey(groupId, artifactId);
         final Map<List<MappedVersion>, ArtifactLicense> artifactVersions = this.mergedLicenseLookup.get(artifactKey);
@@ -104,30 +104,45 @@ public class LicenseLookupHelper {
             return null;
         }
         
+        VersionType matchType = null;
+        ArtifactLicense artifactLicense = null;
+        
         //Search the mapped versions lists for a matching version
         for (final Entry<List<MappedVersion>, ArtifactLicense> versionEntry : artifactVersions.entrySet()) {
             final List<MappedVersion> versions = versionEntry.getKey();
             
             //If no versions are specified for an artifact all versions match 
-            boolean matches = versions.size() == 0;
-            
-            if (!matches) {
+            if (matchType == null && versions.size() == 0) {
+                artifactLicense = versionEntry.getValue();
+            }
+            else {
                 for (final MappedVersion version : versions) {
-                    matches = this.compareVersions(version, artifactVersion);
+                    //Use the first REGEX match found, skip checking any subsequent REGEX versions
+                    if (VersionType.REGEX == matchType && VersionType.REGEX == version.getType()) {
+                        continue;
+                    }
+                    
+                    final boolean matches = this.compareVersions(version, artifactVersion);
                     if (matches) {
-                        break;
+                        matchType = version.getType();
+                        artifactLicense = versionEntry.getValue();
+                        
+                        //If a STRING match is found break the loop. First exact match is always used
+                        if (VersionType.STRING == matchType) {
+                            break;
+                        }
                     }
                 }
             }
             
-            if (matches) {
-                final ArtifactLicense artifactLicense = versionEntry.getValue();
-                this.logger.debug("Found " + artifactLicense + " for: " + groupId + ":" + artifactId + ":" + artifactVersion);
-                return artifactLicense;
+            //If a STRING match is found break the loop. First exact match is always used
+            if (VersionType.STRING == matchType) {
+                break;
             }
         }
-        
-        return null;
+            
+        this.logger.debug("Found " + artifactLicense + " with match " + matchType + " for: " + groupId + ":" + artifactId + ":" + artifactVersion);
+        return new ResolvedLicense(matchType, artifactLicense);
     }
 
     protected boolean compareVersions(final MappedVersion version, ArtifactVersion artifactVersion) {

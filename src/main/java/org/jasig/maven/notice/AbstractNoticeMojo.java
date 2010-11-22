@@ -55,6 +55,7 @@ import org.jasig.maven.notice.lookup.ArtifactLicense;
 import org.jasig.maven.notice.lookup.LicenseLookup;
 import org.jasig.maven.notice.lookup.MappedVersion;
 import org.jasig.maven.notice.util.ResourceFinder;
+import org.jasig.maven.notice.util.ResourceFinderImpl;
 
 /**
  * Common base mojo for notice related plugins
@@ -132,12 +133,21 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     /* Mojo Configuration Properties */
     
     /**
-     * License Lookup XML files / URLs. Lookups are done in-order with
+     * Use licenseMapping
+     *
+     * @parameter
+     * @deprecated use licenseMapping
+     */
+    @Deprecated
+    protected String[] licenseLookup = new String[0];
+    
+    /**
+     * License Mapping XML files / URLs. Lookups are done in-order with
      * files being checked top to bottom for matches
      *
      * @parameter
      */
-    protected String[] licenseLookup = new String[0];
+    protected String[] licenseMapping = new String[0];
     
     /**
      * Template for NOTICE file generation
@@ -210,6 +220,14 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      */
     public final void execute() throws MojoExecutionException, MojoFailureException {
         final Log logger = this.getLog();
+        
+        if (licenseLookup != null && licenseLookup.length > 0) {
+            logger.warn("'licenseLookup' configuration property is deprecated use 'licenseMapping' instead");
+            if (licenseMapping != null && licenseMapping.length > 0) {
+                throw new MojoFailureException("Both 'licenseMapping' and 'licenseLookup' configuration properties configured. Only one may be used.");
+            }
+            licenseMapping = licenseLookup;
+        }
 
         //Check if NOTICE for child modules should be generated
         if (!this.generateChildNotices && !this.project.isExecutionRoot()) {
@@ -218,7 +236,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         
         final ResourceFinder finder = this.getResourceFinder();
         
-        final LicenseLookupHelper licenseLookupHelper = new LicenseLookupHelper(logger, finder, licenseLookup);
+        final LicenseLookupHelper licenseLookupHelper = new LicenseLookupHelper(logger, finder, licenseMapping);
 
         final List<?> remoteArtifactRepositories = project.getRemoteArtifactRepositories();
 
@@ -317,7 +335,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
             
             artifacts.add(artifactLicense);
         }
-        logger.error("Try adding them to a 'licenseLookup' file.");
+        logger.error("Try adding them to a 'licenseMapping' file.");
         
         final File buildDir = new File(project.getBuild().getDirectory());
         final File mappingsfile = new File(buildDir, "license-mappings.xml");
@@ -334,7 +352,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         final Marshaller marshaller = LicenseLookupContext.getMarshaller();
         try {
             marshaller.marshal(licenseLookup, mappingsfile);
-            logger.error("A stub license mapping file has been written to: " + mappingsfile);
+            logger.error("A stub license-mapping.xml file containing the unresolved dependencies has been written to: " + mappingsfile);
         }
         catch (JAXBException e) {
             logger.warn("Failed to write stub license-mappings.xml file to: " + mappingsfile, e);
@@ -411,11 +429,11 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     }
 
     /**
-     * Create the {@link ResourceFinder} for the project
+     * Create the {@link ResourceFinderImpl} for the project
      */
     @SuppressWarnings("unchecked")
     protected ResourceFinder getResourceFinder() throws MojoExecutionException {
-        final ResourceFinder finder = new ResourceFinder(this.project);
+        final ResourceFinder finder = new ResourceFinderImpl(this.project);
         try {
             final List<String> classpathElements = this.project.getCompileClasspathElements();
             finder.setCompileClassPath(classpathElements);

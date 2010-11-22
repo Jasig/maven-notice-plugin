@@ -26,19 +26,18 @@
   <artifact>
     <groupId>org.apache.maven.plugin.projectinfo.tests</groupId>
     <artifactId>notice</artifactId>
-    <name>Notice Test</name>
-    <license>Apache Software License 2.0</license>
+    <name>fb-Notice Test</name>
+    <license>fb-Apache Software License 2.0</license>
   </artifact>
   <artifact>
     <groupId>org.codehaus.plexus</groupId>
     <artifactId>plexus-container-default</artifactId>
-    <version type="regex">1\.0.*</version>
-    <license>Apache Software License 2.0</license>
+    <license>fb-Apache Software License 2.0</license>
   </artifact>
   <artifact>
     <groupId>classworlds</groupId>
     <artifactId>classworlds</artifactId>
     <version type="regex">1\.1.*</version>
-    <license>Apache Software License 2.0</license>
+    <license>re2-Apache Software License 2.0</license>
   </artifact>
 </license-lookup>
