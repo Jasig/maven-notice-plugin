@@ -19,11 +19,13 @@ This project includes:
   Backport of JSR 166 under Public Domain
   classworlds under BSD Style License
   CLI under Apache License, Version 2.0
+  Code Generation Library under ASF 2.0
   Commons Collections under Apache License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
   Doxia Core under Apache License, Version 2.0
+  EasyMock under Apache 2
   java-diff-utils under The Apache Software License, Version 2.0
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JAXB API bundle for GlassFish V3 under CDDL 1.0 or GPL2 w/ CPE
@@ -53,6 +55,7 @@ This project includes:
   Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
   Maven Wagon SSH Provider under The Apache Software License, Version 2.0
   maven-reporting-api under The Apache Software License, Version 2.0
+  Objenesis under Apache 2
   Plexus Archiver Component under Apache License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Default Interactivity Handler under Apache License, Version 2.0
