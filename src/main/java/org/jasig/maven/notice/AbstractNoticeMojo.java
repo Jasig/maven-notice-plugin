@@ -295,14 +295,37 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         
         //Find all sub-modules for the project
         for (final MavenProject moduleProject : collectedProjects) {
-            final String artifactId = moduleProject.getArtifactId();
-            if (this.excludedModules.contains(artifactId)) {
-                logger.info("Skipping aggregation of child module " +  moduleProject.getName() + " with excluded artifactId: " + artifactId);
+            if (this.isExcluded(moduleProject, project.getArtifactId())) {
                 continue;
             }
             
             this.parseProject(moduleProject, visitor);
         }
+    }
+    
+    /**
+     * Check if a project is excluded based on its artifactId or a parent's artifactId
+     */
+    protected boolean isExcluded(MavenProject mavenProject, String rootArtifactId) {
+        final Log logger = this.getLog();
+        
+        final String artifactId = mavenProject.getArtifactId();
+        if (this.excludedModules.contains(artifactId)) {
+            logger.info("Skipping aggregation of child module " +  mavenProject.getName() + " with excluded artifactId: " + artifactId);
+            return true;
+        }
+        
+        MavenProject parentProject = mavenProject.getParent();
+        while (parentProject != null && !rootArtifactId.equals(parentProject.getArtifactId())) {
+            final String parentArtifactId = parentProject.getArtifactId();
+            if (this.excludedModules.contains(parentArtifactId)) {
+                logger.info("Skipping aggregation of child module " +  mavenProject.getName() + " with excluded parent artifactId: " + parentArtifactId);
+                return true;
+            }
+            parentProject = parentProject.getParent();
+        }
+        
+        return false;
     }
 
     /**
