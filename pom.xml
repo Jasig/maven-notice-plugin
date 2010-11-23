@@ -19,7 +19,7 @@
 
     <groupId>org.jasig.maven</groupId>
     <artifactId>maven-notice-plugin</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.4</version>
     <packaging>maven-plugin</packaging>
 
     <name>Maven NOTICE Generation Plugin</name>
@@ -32,9 +32,9 @@
     </prerequisites>
     
     <scm>
-        <connection>scm:svn:https://source.jasig.org/sandbox/maven-notice-plugin/trunk</connection>
-        <developerConnection>scm:svn:https://source.jasig.org/sandbox/maven-notice-plugin/trunk</developerConnection>
-        <url>https://developer.jasig.org/source/browse/jasigsvn/sandbox/maven-notice-plugin/trunk</url>
+        <connection>scm:svn:https://source.jasig.org/sandbox/maven-notice-plugin/tags/maven-notice-plugin-1.0.4</connection>
+        <developerConnection>scm:svn:https://source.jasig.org/sandbox/maven-notice-plugin/tags/maven-notice-plugin-1.0.4</developerConnection>
+        <url>https://developer.jasig.org/source/browse/jasigsvn/sandbox/maven-notice-plugin/tags/maven-notice-plugin-1.0.4</url>
     </scm>
 
     <distributionManagement>
