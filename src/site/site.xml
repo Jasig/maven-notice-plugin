@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Licensed to Jasig under one or more contributor license
@@ -20,14 +21,28 @@
 -->
 
 <project xmlns="http://maven.apache.org/DECORATION/1.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
-  <body>
-    <menu ref="parent" />
-    <menu name="Overview">
-      <item name="Goals" href="plugin-info.html" />
-    </menu>
-    <menu ref="modules" />
-    <menu ref="reports" />
-  </body>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd"
+    name="${project.name} ${project.version}">
+    
+    <bannerLeft>
+        <name>${project.name}</name>
+        <href>${project.url}</href>
+    </bannerLeft>
+    <bannerRight>
+        <name>Jasig</name>
+        <src>http://www.jasig.org/sites/all/themes/jasig2/logo.png</src>
+        <href>http://www.jasig.org</href>
+    </bannerRight>
+    <publishDate format="MM-dd-yy hh:mm zz" position="right" />
+    <version position="right" />
+    
+    <body>
+        <menu ref="parent" />
+        <menu name="Overview">
+            <item name="Goals" href="plugin-info.html" />
+        </menu>
+        <menu ref="modules" />
+        <menu ref="reports" />
+    </body>
 </project>

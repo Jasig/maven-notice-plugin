@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.jasig.parent</groupId>
         <artifactId>jasig-parent</artifactId>
-        <version>29</version>
+        <version>32-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jasig.maven</groupId>
@@ -26,6 +26,7 @@
     <description>
         Generates Apache style NOTICE files
     </description>
+    <url>${jasig-site-base}${project-site-path}</url>
 
     <prerequisites>
         <maven>2.2.1</maven>
@@ -37,21 +38,10 @@
         <url>https://developer.jasig.org/source/browse/jasigsvn/sandbox/maven-notice-plugin/trunk</url>
     </scm>
 
-    <distributionManagement>
-        <site>
-            <id>developer.jasig</id>
-            <url>${jasig-site-dist-base}/${project.artifactId}/${project.version}</url>
-        </site>
-    </distributionManagement>
-
-
     <properties>
-        <doxiaVersion>1.1.2</doxiaVersion>
-        <doxia-sitetoolsVersion>1.1.2</doxia-sitetoolsVersion>
+        <project-site-path>/maven-notice-plugin/${project.version}</project-site-path>
+        
         <mavenVersion>2.2.0</mavenVersion>
-        <wagonVersion>1.0-beta-6</wagonVersion>
-        <scmVersion>1.3</scmVersion>
-        <sitePluginVersion>2.1</sitePluginVersion>
         <jaxbApiVersion>2.2.1</jaxbApiVersion>
         <jaxbImplVersion>2.2.1.1</jaxbImplVersion>
         <jaxbXjcVersion>2.2.1</jaxbXjcVersion>
@@ -321,6 +311,15 @@
                 <site>
                     <id>ci-local-site</id>
                     <url>${jasig-site-ci-dist-base}${project-site-path}</url>
+                </site>
+            </distributionManagement>
+        </profile>
+        <profile>
+            <id>manual-site</id>
+            <distributionManagement>
+                <site>
+                    <id>developer.jasig</id>
+                    <url>${jasig-site-dist-base}${project-site-path}</url>
                 </site>
             </distributionManagement>
         </profile>
