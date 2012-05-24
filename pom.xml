@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.jasig.parent</groupId>
         <artifactId>jasig-parent</artifactId>
-        <version>32-SNAPSHOT</version>
+        <version>33</version>
     </parent>
 
     <groupId>org.jasig.maven</groupId>
@@ -33,9 +33,9 @@
     </prerequisites>
     
     <scm>
-        <connection>scm:svn:https://source.jasig.org/sandbox/maven-notice-plugin/trunk</connection>
-        <developerConnection>scm:svn:https://source.jasig.org/sandbox/maven-notice-plugin/trunk</developerConnection>
-        <url>https://developer.jasig.org/source/browse/jasigsvn/sandbox/maven-notice-plugin/trunk</url>
+        <connection>scm:git:git://github.com/Jasig/maven-notice-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:Jasig/maven-notice-plugin.git</developerConnection>
+        <url>https://github.com/Jasig/maven-notice-plugin</url>
     </scm>
 
     <properties>
@@ -45,7 +45,7 @@
         <jaxbApiVersion>2.2.1</jaxbApiVersion>
         <jaxbImplVersion>2.2.1.1</jaxbImplVersion>
         <jaxbXjcVersion>2.2.1</jaxbXjcVersion>
-        <jaxb2basicsVersion>0.6.0</jaxb2basicsVersion>
+        <jaxb2basicsVersion>0.6.3</jaxb2basicsVersion>
     </properties>
 
     <dependencies>
@@ -58,17 +58,17 @@
         <dependency>
             <groupId>com.googlecode.java-diff-utils</groupId>
             <artifactId>diffutils</artifactId>
-            <version>1.2</version>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.5</version>
+            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.0</version>
+            <version>2.3</version>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
@@ -132,7 +132,7 @@
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
-            <version>3.0</version>
+            <version>3.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

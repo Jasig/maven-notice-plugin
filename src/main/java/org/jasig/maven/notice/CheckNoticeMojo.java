@@ -122,13 +122,13 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
                 
                 //Write out the diff line info
                 diffText.append(original.getPosition() + 1);
-                if (original.getSize() > 1) {
-                    diffText.append(",").append(original.getPosition() + original.getSize());
+                if (original.getLines().size() > 1) {
+                    diffText.append(",").append(original.getPosition() + original.getLines().size());
                 }
                 diffText.append(changeType);
                 diffText.append(revised.getPosition() + 1);
-                if (revised.getSize() > 1) {
-                    diffText.append(",").append(revised.getPosition() + revised.getSize());
+                if (revised.getLines().size() > 1) {
+                    diffText.append(",").append(revised.getPosition() + revised.getLines().size());
                 }
                 diffText.append("\n");
 
