@@ -19,6 +19,7 @@
 
 package org.jasig.maven.notice;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,7 @@ import javax.xml.bind.Marshaller;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -395,7 +397,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         
         for (final Map.Entry<String, String> resolvedEntry : resolvedLicenses.entrySet()) {
             final String line = messageFormat.format(new Object[] { resolvedEntry.getKey(), resolvedEntry.getValue()});
-            builder.append(line).append("\n");
+            builder.append(line).append(IOUtils.LINE_SEPARATOR);
         }
         
         return builder.toString();
@@ -416,16 +418,20 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     }
 
     /**
-     * Read the template notice file into a string
+     * Read the template notice file into a string, converting the line ending to the current OS line endings
      */
     protected String readNoticeTemplate(ResourceFinder finder) throws MojoFailureException {
         final URL inputFile = finder.findResource(this.noticeTemplate);
 
-        final String noticeTemplateContents;
+        final StringBuilder noticeTemplateContents = new StringBuilder();
         InputStream inputStream = null;
         try {
             inputStream = inputFile.openStream();
-            noticeTemplateContents = IOUtils.toString(inputStream, this.encoding);
+            for (final LineIterator lineIterator = IOUtils.lineIterator(new BufferedInputStream(inputStream), this.encoding);
+                    lineIterator.hasNext();) {
+                final String line = lineIterator.next();
+                noticeTemplateContents.append(line).append(IOUtils.LINE_SEPARATOR);
+            }
         }
         catch (IOException e) {
             throw new MojoFailureException("Failed to open NOTICE Template File '" + this.noticeTemplate + "' from: " + inputFile, e);
@@ -433,7 +439,8 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         finally {
             IOUtils.closeQuietly(inputStream);
         }
-        return noticeTemplateContents;
+        
+        return noticeTemplateContents.toString();
     }
     
     /**
