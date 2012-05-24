@@ -19,8 +19,12 @@
 
 package org.jasig.maven.notice;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
 
@@ -62,18 +66,18 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
         }
         
         //Load up the existing NOTICE file
-        final String existingNoticeContents;
+        final Reader existingNoticeContents;
         try {
-            existingNoticeContents = FileUtils.readFileToString(outputFile, this.encoding);
+            final FileInputStream outputFileInputStream = new FileInputStream(outputFile);
+            existingNoticeContents = new InputStreamReader(new BufferedInputStream(outputFileInputStream), this.encoding);
         }
         catch (IOException e) {
             throw new MojoFailureException("Failed to read existing NOTICE File from: " + outputFile, e);
         }
         
         //Check if the notice files match
-        if (!noticeContents.equals(existingNoticeContents)) {
-            final String diffText = this.generateDiff(logger, noticeContents, existingNoticeContents);
-                
+        final String diffText = this.generateDiff(logger, new StringReader(noticeContents), existingNoticeContents);
+        if (diffText.length() != 0) {
             final String buildDir = project.getBuild().getDirectory();
             final File expectedNoticeFile = new File(new File(buildDir), "NOTICE.expected");
             try {
@@ -91,11 +95,11 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
         logger.info("NOTICE file is up to date");
     }
 
-    protected String generateDiff(Log logger, String noticeContents, final String existingNoticeContents) {
+    protected String generateDiff(Log logger, Reader noticeContents, Reader existingNoticeContents) {
         final StringBuilder diffText = new StringBuilder();
         try {
-            final List<?> expectedLines = IOUtils.readLines(new StringReader(noticeContents));
-            final List<?> existingLines = IOUtils.readLines(new StringReader(existingNoticeContents));
+            final List<?> expectedLines = IOUtils.readLines(noticeContents);
+            final List<?> existingLines = IOUtils.readLines(existingNoticeContents);
             final Patch diff = DiffUtils.diff(expectedLines, existingLines);
             
             for (final Delta delta : diff.getDeltas()) {
