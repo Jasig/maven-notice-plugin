@@ -130,7 +130,9 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
                     name = StringUtils.trimToNull(artifactLicense.getName());
                 }
                 if (licenseName == null) {
-                    licenseName = StringUtils.trimToNull(artifactLicense.getLicense());
+		    if (artifactLicense != null) {
+                    	licenseName = StringUtils.trimToNull(artifactLicense.getLicense());
+		    }
                 }
             }
             
