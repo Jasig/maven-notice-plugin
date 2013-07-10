@@ -63,7 +63,6 @@ import org.jasig.maven.notice.util.ResourceFinderImpl;
  * Common base mojo for notice related plugins
  * 
  * @author Eric Dalquist
- * @version $Revision$
  */
 public abstract class AbstractNoticeMojo extends AbstractMojo {
     
@@ -144,6 +143,13 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     protected String[] licenseLookup = new String[0];
     
     /**
+     * Parameter to skip running checks entirely.
+     *
+     * @parameter expression="skip.checks"
+     */
+    private boolean skipChecks = false;
+    
+    /**
      * License Mapping XML files / URLs. Lookups are done in-order with
      * files being checked top to bottom for matches
      *
@@ -206,6 +212,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      * @parameter default-value="  {0} under {1}"
      */
     protected String noticeMessage = "  {0} under {1}";
+    
     private MessageFormat parsedNoticeMessage;
     
     /**
@@ -223,6 +230,11 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     public final void execute() throws MojoExecutionException, MojoFailureException {
         final Log logger = this.getLog();
         
+        if (this.skipChecks) {
+            logger.info("NOTICE file checks are skipped.");
+            return;
+        }
+        
         if (licenseLookup != null && licenseLookup.length > 0) {
             logger.warn("'licenseLookup' configuration property is deprecated use 'licenseMapping' instead");
             if (licenseMapping != null && licenseMapping.length > 0) {
@@ -230,7 +242,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
             }
             licenseMapping = licenseLookup;
         }
-
+       
         //Check if NOTICE for child modules should be generated
         if (!this.generateChildNotices && !this.project.isExecutionRoot()) {
             return;
