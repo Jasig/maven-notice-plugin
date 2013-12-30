@@ -145,7 +145,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     /**
      * Parameter to skip running checks entirely.
      *
-     * @parameter expression="skip.checks"
+     * @parameter expression="${skip.checks}"
      */
     private boolean skipChecks = false;
     
