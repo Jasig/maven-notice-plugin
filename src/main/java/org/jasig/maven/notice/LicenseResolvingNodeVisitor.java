@@ -19,13 +19,7 @@
 
 package org.jasig.maven.notice;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -45,24 +39,28 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
     private final Map<String, String> resolvedLicenses = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
     private final Set<Artifact> unresolvedArtifacts = new TreeSet<Artifact>();
     private final Set<Artifact> visitedArtifacts = new HashSet<Artifact>();
+    private final Map<String, Artifact> resolvedArtifacts = new TreeMap<String,Artifact>(String.CASE_INSENSITIVE_ORDER);
     
     private final Log logger;
     private final LicenseLookupHelper licenseLookupHelper;
     private final List<?> remoteArtifactRepositories;
     private final MavenProjectBuilder mavenProjectBuilder;
     private final ArtifactRepository localRepository;
+    private final Properties licenseNameAliases;
     
     LicenseResolvingNodeVisitor(Log logger,
             LicenseLookupHelper licenseLookupHelper, 
             List<?> remoteArtifactRepositories,
             MavenProjectBuilder mavenProjectBuilder,
-            ArtifactRepository localRepository) {
+            ArtifactRepository localRepository,
+            Properties licenseNameAliases) {
         
         this.logger = logger;
         this.licenseLookupHelper = licenseLookupHelper;
         this.remoteArtifactRepositories = remoteArtifactRepositories;
         this.mavenProjectBuilder = mavenProjectBuilder;
         this.localRepository = localRepository;
+        this.licenseNameAliases = licenseNameAliases;
     }
     
     public Map<String, String> getResolvedLicenses() {
@@ -71,6 +69,10 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
 
     public Set<Artifact> getUnresolvedArtifacts() {
         return unresolvedArtifacts;
+    }
+
+    public Map<String, Artifact> getResolvedArtifacts() {
+        return resolvedArtifacts;
     }
 
     public boolean visit(DependencyNode node) {
@@ -140,6 +142,12 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
             if (name == null) {
                 name = artifact.getGroupId() + ":" + artifact.getArtifactId();
             }
+
+            // do we have an alias for the resolved license name ?
+            if (licenseNameAliases != null && licenseNameAliases.size() > 0 && licenseNameAliases.getProperty(licenseName) != null) {
+                // yes, we use the alias.
+                licenseName = licenseNameAliases.getProperty(licenseName);
+            }
             
             //Record the artifact resolution outcome
             if (licenseName == null) {
@@ -147,6 +155,7 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
             }
             else {
                 this.resolvedLicenses.put(name, licenseName);
+                this.resolvedArtifacts.put(name, artifact);
             }
         }
         return true;
