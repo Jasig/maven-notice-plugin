@@ -165,7 +165,7 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
             return mavenProjectBuilder.buildFromRepository(artifact, remoteArtifactRepositories, localRepository, false);
         }
         catch (ProjectBuildingException e) {
-            this.logger.warn(String.format("Failed to find license info for: %s; cause: %s", artifact, e));
+            this.logger.warn(String.format("Failed to find license info for: %s; cause: %s", artifact, e.getMessage()));
             this.logger.debug(String.format("Failed to find license info for: %s", artifact), e);
         }
         return null;
