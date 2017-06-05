@@ -27,9 +27,8 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.TreeSet;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -170,7 +169,24 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      * @parameter default-value="#GENERATED_NOTICES#"
      */
     protected String noticeTemplatePlaceholder = "#GENERATED_NOTICES#";
-    
+
+
+    /**
+     * List of scopes, like "compile", "test", etc. If specified,
+     * only dependencies with these scopes will be listed in the NOTICE file.
+     *
+     * @parameter
+     */
+    protected Set<String> includeScopes = new TreeSet<String>();
+
+    /**
+     * List of scopes, like "compile", "test", etc. If specified,
+     * dependencies with these scopes will be omitted from the NOTICE file.
+     *
+     * @parameter
+     */
+    protected Set<String> excludeScopes = new TreeSet<String>();
+
     /**
      * Output location for the generated NOTICE file
      *
@@ -266,12 +282,12 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         this.checkUnresolved(unresolvedArtifacts);
         
         //Convert the resovled notice data into a String
-        final Map<String, String> resolvedLicenses = visitor.getResolvedLicenses();
+        final Set<ArtifactLicenseInfo> resolvedLicenses = visitor.getResolvedLicenses();
         final String noticeLines = this.generateNoticeLines(resolvedLicenses);
         final String noticeTemplateContents = this.readNoticeTemplate(finder);
         
         //Replace the template placeholder with the generated notice data
-        final String noticeContents = noticeTemplateContents.replaceAll(Pattern.quote(this.noticeTemplatePlaceholder), noticeLines);        
+        final String noticeContents = noticeTemplateContents.replace(this.noticeTemplatePlaceholder, noticeLines);
         
         //Let the subclass deal with the generated NOTICE file
         this.handleNotice(finder, noticeContents);
@@ -401,14 +417,24 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     /**
      * Create the generated part of the NOTICE file based on the resolved license data
      */
-    protected String generateNoticeLines(Map<String, String> resolvedLicenses) {
+    protected String generateNoticeLines(Set<ArtifactLicenseInfo> resolvedLicenses) {
         final StringBuilder builder = new StringBuilder();
 
         
         final MessageFormat messageFormat = getNoticeMessageFormat();
         
-        for (final Map.Entry<String, String> resolvedEntry : resolvedLicenses.entrySet()) {
-            final String line = messageFormat.format(new Object[] { resolvedEntry.getKey(), resolvedEntry.getValue()});
+        for (final ArtifactLicenseInfo resolvedLicense : resolvedLicenses) {
+            if (! includeScopes.isEmpty()) {
+                if (resolvedLicense.getScope() == null || ! includeScopes.contains(resolvedLicense.getScope())) {
+                    continue;
+                }
+            }
+            if (! excludeScopes.isEmpty()) {
+                if (resolvedLicense.getScope() != null && excludeScopes.contains(resolvedLicense.getScope())) {
+                    continue;
+                }
+            }
+            final String line = messageFormat.format(new Object[] { resolvedLicense.getArtifactName(), resolvedLicense.getLicenseName()});
             builder.append(line).append(IOUtils.LINE_SEPARATOR);
         }
         
