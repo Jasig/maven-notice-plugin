@@ -19,12 +19,11 @@
 
 package org.jasig.maven.notice;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,7 +41,11 @@ import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 import org.jasig.maven.notice.lookup.ArtifactLicense;
 
 class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
-    private final Map<String, String> resolvedLicenses = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<ArtifactLicenseInfo> resolvedLicenses = new TreeSet<ArtifactLicenseInfo>(new Comparator<ArtifactLicenseInfo>() {
+        public int compare(ArtifactLicenseInfo i1, ArtifactLicenseInfo i2) {
+            return String.CASE_INSENSITIVE_ORDER.compare(i1.getArtifactName(), i2.getArtifactName());
+        }
+    });
     private final Set<Artifact> unresolvedArtifacts = new TreeSet<Artifact>();
     private final Set<Artifact> visitedArtifacts = new HashSet<Artifact>();
     
@@ -65,7 +68,7 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
         this.localRepository = localRepository;
     }
     
-    public Map<String, String> getResolvedLicenses() {
+    public Set<ArtifactLicenseInfo> getResolvedLicenses() {
         return resolvedLicenses;
     }
 
@@ -146,7 +149,7 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
                 this.unresolvedArtifacts.add(artifact);
             }
             else {
-                this.resolvedLicenses.put(name, licenseName);
+                this.resolvedLicenses.add(new ArtifactLicenseInfo(name, licenseName, node.getArtifact().getScope()));
             }
         }
         return true;
