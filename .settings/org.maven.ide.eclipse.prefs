@@ -1,9 +1,0 @@
-#Tue Nov 09 07:36:52 CST 2010
-activeProfiles=jaxb
-eclipse.preferences.version=1
-fullBuildGoals=process-test-resources
-includeModules=false
-resolveWorkspaceProjects=true
-resourceFilterGoals=process-resources resources\:testResources
-skipCompilerPlugin=true
-version=1
