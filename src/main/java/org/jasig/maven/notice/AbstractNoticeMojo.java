@@ -237,9 +237,22 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      * @parameter
      */
     protected Set<String> excludedModules = new LinkedHashSet<String>();
-    
-    
-    
+
+    /**
+     * Whether to exclude optional dependencies and any transitive dependencies of those.<br />
+     *
+     * For example, if your POM declares an optional dependency A with a transitive dependency B:
+     * <ul>
+     *     <li>A will be excluded as it is directly defined as an optional dependency.</li>
+     *     <li>B will be excluded as it is resolved via A, which is optional.</li>
+     *     <li>However, if B were to be explicitly declared as a non-optional dependency in your pom, then it would be included.</li>
+     * </ul>
+     *
+     * @parameter
+     */
+    protected boolean excludeOptional;
+
+
     /* (non-Javadoc)
      * @see org.apache.maven.plugin.Mojo#execute()
      */
@@ -433,6 +446,9 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
                 if (resolvedLicense.getScope() != null && excludeScopes.contains(resolvedLicense.getScope())) {
                     continue;
                 }
+            }
+            if (excludeOptional && resolvedLicense.isOptional()) {
+                continue;
             }
             final String line = messageFormat.format(new Object[] { resolvedLicense.getArtifactName(), resolvedLicense.getLicenseName()});
             builder.append(line).append(IOUtils.LINE_SEPARATOR);

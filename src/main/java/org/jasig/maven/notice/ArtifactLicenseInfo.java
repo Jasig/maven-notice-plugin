@@ -24,11 +24,13 @@ public class ArtifactLicenseInfo {
     private final String artifactName;
     private final String licenseName;
     private final String scope;
+    private final boolean optional;
 
-    public ArtifactLicenseInfo(String artifactName, String licenseName, String scope) {
+    public ArtifactLicenseInfo(String artifactName, String licenseName, String scope, boolean optional) {
         this.artifactName = artifactName;
         this.licenseName = licenseName;
         this.scope = scope;
+        this.optional = optional;
     }
 
     public String getArtifactName() {
@@ -41,5 +43,9 @@ public class ArtifactLicenseInfo {
 
     public String getScope() {
         return scope;
+    }
+
+    public boolean isOptional() {
+        return optional;
     }
 }

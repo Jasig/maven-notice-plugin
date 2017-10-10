@@ -84,7 +84,7 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
             if (!visitedArtifacts.add(artifact)) {
                 return true;
             }
-            
+
             String name = null;
             String licenseName = null;
             
@@ -149,10 +149,30 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
                 this.unresolvedArtifacts.add(artifact);
             }
             else {
-                this.resolvedLicenses.add(new ArtifactLicenseInfo(name, licenseName, node.getArtifact().getScope()));
+                this.resolvedLicenses.add(new ArtifactLicenseInfo(name, licenseName, node.getArtifact().getScope(), hasOptionalLicense(node)));
             }
         }
         return true;
+    }
+
+    /**
+     * Check if the given node or any of its parents are optional.
+     * i.e. if your POM declares an optional dependency A with a transitive dependency B:
+     * <ul>
+     *     <li>A will return true because it is optional</li>
+     *     <li>B will have A as its parent, and so it will also be optional</li>
+     *     <li>If B were to be directly declared as a non-optional dependency, then this method would return false.</li>
+     * </ul>
+     */
+    private boolean hasOptionalLicense(DependencyNode node) {
+        while (node != null && node.getArtifact() != null) {
+            if (node.getArtifact().isOptional()) {
+                return true;
+            }
+            node = node.getParent();
+        }
+
+        return false;
     }
 
     protected ResolvedLicense loadLicenseMapping(final Artifact artifact) {
