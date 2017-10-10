@@ -17,19 +17,19 @@ under the License.
 
 This project includes:
   Apache Commons Collections under Apache License, Version 2.0
+  Apache Commons IO under Apache License, Version 2.0
   Backport of JSR 166 under Public Domain
   classworlds under BSD Style License
   CLI under Apache License, Version 2.0
-  Code Generation Library under ASF 2.0
-  Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
   Doxia Core under Apache License, Version 2.0
   EasyMock under Apache 2
+  Hamcrest Core under New BSD License
   java-diff-utils under The Apache Software License, Version 2.0
   JAXB2 Basics - Runtime under BSD-Style License
   jsch under BSD
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   Maven under The Apache Software License, Version 2.0
   Maven Artifact under The Apache Software License, Version 2.0
   Maven Artifact Manager under The Apache Software License, Version 2.0
