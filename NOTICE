@@ -16,11 +16,11 @@ specific language governing permissions and limitations
 under the License.
 
 This project includes:
+  Apache Commons Collections under Apache License, Version 2.0
   Backport of JSR 166 under Public Domain
   classworlds under BSD Style License
   CLI under Apache License, Version 2.0
   Code Generation Library under ASF 2.0
-  Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
