@@ -40,6 +40,7 @@
 
     <properties>
         <project-site-path>/maven-notice-plugin/${project.version}</project-site-path>
+        <additionalparam>-Xdoclint:none</additionalparam>
 
         <mavenVersion>2.2.1</mavenVersion>
         <jaxbApiVersion>2.2.1</jaxbApiVersion>
