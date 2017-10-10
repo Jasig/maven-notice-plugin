@@ -41,7 +41,7 @@
     <properties>
         <project-site-path>/maven-notice-plugin/${project.version}</project-site-path>
 
-        <mavenVersion>2.2.0</mavenVersion>
+        <mavenVersion>2.2.1</mavenVersion>
         <jaxbApiVersion>2.2.1</jaxbApiVersion>
         <jaxbImplVersion>2.2.1.1</jaxbImplVersion>
         <jaxbXjcVersion>2.2.1</jaxbXjcVersion>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.3</version>
+            <version>2.5</version>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
@@ -132,13 +132,13 @@
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
-            <version>3.1</version>
+            <version>3.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.2</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
