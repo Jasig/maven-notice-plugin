@@ -103,11 +103,11 @@ public class CheckNoticeMojo extends AbstractNoticeMojo {
             Log logger, Reader noticeContents, Reader existingNoticeContents) {
         final StringBuilder diffText = new StringBuilder();
         try {
-            final List<?> expectedLines = IOUtils.readLines(noticeContents);
-            final List<?> existingLines = IOUtils.readLines(existingNoticeContents);
-            final Patch diff = DiffUtils.diff(expectedLines, existingLines);
+            final List<String> expectedLines = IOUtils.readLines(noticeContents);
+            final List<String> existingLines = IOUtils.readLines(existingNoticeContents);
+            final Patch<String> diff = DiffUtils.diff(expectedLines, existingLines);
 
-            for (final Delta delta : diff.getDeltas()) {
+            for (final Delta<String> delta : diff.getDeltas()) {
                 final Chunk original = delta.getOriginal();
                 final Chunk revised = delta.getRevised();
 
