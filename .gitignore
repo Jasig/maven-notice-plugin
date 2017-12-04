@@ -338,3 +338,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/vim,java,linux,macos,maven,emacs,eclipse,windows,netbeans,sublimetext,intellij+all
+
+# intellij project files
+*.iml
