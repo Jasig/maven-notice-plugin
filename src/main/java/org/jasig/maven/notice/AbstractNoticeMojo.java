@@ -219,7 +219,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      * {0} - artifact name<br>
      * {1} - license name<br>
      *
-     * @parameter default-value=" {0} under {1}"
+     * @parameter default-value="  {0} under {1}"
      */
     protected String noticeMessage = "  {0} under {1}";
 
