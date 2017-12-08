@@ -16,24 +16,31 @@ specific language governing permissions and limitations
 under the License.
 
 This project includes:
+  Aether Utilities under Eclipse Public License, Version 1.0
   Apache Commons Collections under Apache License, Version 2.0
+  Apache Commons IO under Apache License, Version 2.0
+  Apache Maven Dependency Tree under Apache License, Version 2.0
   Backport of JSR 166 under Public Domain
   classworlds under BSD Style License
-  CLI under Apache License, Version 2.0
-  Code Generation Library under ASF 2.0
-  Commons IO under The Apache Software License, Version 2.0
+  Codec under Apache License, Version 2.0
+  Commons CLI under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
-  Doxia Core under Apache License, Version 2.0
+  Doxia :: Logging API under The Apache Software License, Version 2.0
+  Doxia :: Sink API under The Apache Software License, Version 2.0
   EasyMock under Apache 2
+  Hamcrest Core under New BSD License
+  HttpClient under Apache License
+  Jackrabbit JCR Commons under The Apache Software License, Version 2.0
+  Jackrabbit WebDAV Library under The Apache Software License, Version 2.0
   java-diff-utils under The Apache Software License, Version 2.0
   JAXB2 Basics - Runtime under BSD-Style License
-  jsch under BSD
-  JUnit under Common Public License Version 1.0
-  Maven under The Apache Software License, Version 2.0
+  JCL 1.1.1 implemented over SLF4J under MIT License
+  JSch under BSD
+  JUnit under Eclipse Public License 1.0
   Maven Artifact under The Apache Software License, Version 2.0
   Maven Artifact Manager under The Apache Software License, Version 2.0
-  Maven Dependency Tree under The Apache Software License, Version 2.0
+  Maven Core under The Apache Software License, Version 2.0
   Maven Error Diagnostics under The Apache Software License, Version 2.0
   Maven Local Settings Model under The Apache Software License, Version 2.0
   Maven Model under The Apache Software License, Version 2.0
@@ -46,17 +53,31 @@ This project includes:
   Maven Plugin Testing Mechanism under The Apache Software License, Version 2.0
   Maven Profile Model under The Apache Software License, Version 2.0
   Maven Project Builder under The Apache Software License, Version 2.0
+  Maven Reporting API under The Apache Software License, Version 2.0
   Maven Repository Metadata Model under The Apache Software License, Version 2.0
   Maven Wagon API under The Apache Software License, Version 2.0
   Maven Wagon File Provider under The Apache Software License, Version 2.0
+  Maven Wagon HTTP Provider under The Apache Software License, Version 2.0
+  Maven Wagon HTTP Shared Library under The Apache Software License, Version 2.0
   Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
+  Maven Wagon SSH Common Library under The Apache Software License, Version 2.0
+  Maven Wagon SSH External Provider under The Apache Software License, Version 2.0
   Maven Wagon SSH Provider under The Apache Software License, Version 2.0
-  maven-reporting-api under The Apache Software License, Version 2.0
+  Maven Wagon WebDav Provider under The Apache Software License, Version 2.0
+  Neko HTML under The Apache Software License, Version 2.0
   Objenesis under Apache 2
-  Plexus Archiver Component under Apache License, Version 2.0
+  Plexus :: Component Annotations under The Apache Software License, Version 2.0
+  Plexus Archiver Component under The Apache Software License, Version 2.0
+  Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Default Interactivity Handler under Apache License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
+  Plexus IO Components under The Apache Software License, Version 2.0
+  Plexus Security Dispatcher Component under Apache Public License 2.0
+  SLF4J API Module under MIT License
+  SLF4J JDK14 Binding under MIT License
+  SLF4J NOP Binding under MIT License
+  xercesMinimal under Apache License, Version 2.0
 
 
 This project also includes code under copywrite of the following entities:
