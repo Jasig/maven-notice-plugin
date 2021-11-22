@@ -34,8 +34,8 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.jasig.maven.notice.lookup.ArtifactLicense;
 
 class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
@@ -52,14 +52,14 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
 
     private final Log logger;
     private final LicenseLookupHelper licenseLookupHelper;
-    private final List<?> remoteArtifactRepositories;
+    private final List<ArtifactRepository> remoteArtifactRepositories;
     private final MavenProjectBuilder mavenProjectBuilder;
     private final ArtifactRepository localRepository;
 
     LicenseResolvingNodeVisitor(
             Log logger,
             LicenseLookupHelper licenseLookupHelper,
-            List<?> remoteArtifactRepositories,
+            List<ArtifactRepository> remoteArtifactRepositories,
             MavenProjectBuilder mavenProjectBuilder,
             ArtifactRepository localRepository) {
 
@@ -79,85 +79,83 @@ class LicenseResolvingNodeVisitor implements DependencyNodeVisitor {
     }
 
     public boolean visit(DependencyNode node) {
-        if (DependencyNode.INCLUDED == node.getState()) {
-            final Artifact artifact = node.getArtifact();
+        final Artifact artifact = node.getArtifact();
 
-            // Only resolve an artifact once, if already visited just skip it
-            if (!visitedArtifacts.add(artifact)) {
-                return true;
-            }
+        // Only resolve an artifact once, if already visited just skip it
+        if (!visitedArtifacts.add(artifact)) {
+            return true;
+        }
 
-            String name = null;
-            String licenseName = null;
+        String name = null;
+        String licenseName = null;
 
-            // Look for a matching mapping first
-            final ResolvedLicense resolvedLicense = this.loadLicenseMapping(artifact);
-            if (resolvedLicense != null && resolvedLicense.getVersionType() != null) {
-                final ArtifactLicense artifactLicense = resolvedLicense.getArtifactLicense();
-                name = StringUtils.trimToNull(artifactLicense.getName());
-                licenseName = StringUtils.trimToNull(artifactLicense.getLicense());
-            }
+        // Look for a matching mapping first
+        final ResolvedLicense resolvedLicense = this.loadLicenseMapping(artifact);
+        if (resolvedLicense != null && resolvedLicense.getVersionType() != null) {
+            final ArtifactLicense artifactLicense = resolvedLicense.getArtifactLicense();
+            name = StringUtils.trimToNull(artifactLicense.getName());
+            licenseName = StringUtils.trimToNull(artifactLicense.getLicense());
+        }
 
-            // If name or license are still null try loading from the project
-            if (name == null || licenseName == null) {
-                final MavenProject artifactProject = this.loadProject(artifact);
-                if (artifactProject != null) {
-                    if (name == null) {
-                        name = artifactProject.getName();
-                    }
-
-                    if (licenseName == null) {
-                        final Model model = artifactProject.getModel();
-                        final List<License> licenses = model.getLicenses();
-
-                        if (licenses.size() == 1) {
-                            licenseName = licenses.get(0).getName();
-                        } else if (licenses.size() > 1) {
-                            final StringBuilder licenseNameBuilder = new StringBuilder();
-                            for (final Iterator<License> licenseItr = licenses.iterator();
-                                    licenseItr.hasNext(); ) {
-                                final License license = licenseItr.next();
-                                licenseNameBuilder.append(license.getName());
-                                if (licenseItr.hasNext()) {
-                                    licenseNameBuilder.append(" or ");
-                                }
-                            }
-                            licenseName = licenseNameBuilder.toString();
-                        }
-                    }
-                }
-            }
-
-            // Try fall-back match for name & license, hitting this implies the resolved license was
-            // an all-versions match
-            if (resolvedLicense != null && (licenseName == null || name == null)) {
-                final ArtifactLicense artifactLicense = resolvedLicense.getArtifactLicense();
+        // If name or license are still null try loading from the project
+        if (name == null || licenseName == null) {
+            final MavenProject artifactProject = this.loadProject(artifact);
+            if (artifactProject != null) {
                 if (name == null) {
-                    name = StringUtils.trimToNull(artifactLicense.getName());
+                    name = artifactProject.getName();
                 }
+
                 if (licenseName == null) {
-                    if (artifactLicense != null) {
-                        licenseName = StringUtils.trimToNull(artifactLicense.getLicense());
+                    final Model model = artifactProject.getModel();
+                    final List<License> licenses = model.getLicenses();
+
+                    if (licenses.size() == 1) {
+                        licenseName = licenses.get(0).getName();
+                    } else if (licenses.size() > 1) {
+                        final StringBuilder licenseNameBuilder = new StringBuilder();
+                        for (final Iterator<License> licenseItr = licenses.iterator();
+                                licenseItr.hasNext(); ) {
+                            final License license = licenseItr.next();
+                            licenseNameBuilder.append(license.getName());
+                            if (licenseItr.hasNext()) {
+                                licenseNameBuilder.append(" or ");
+                            }
+                        }
+                        licenseName = licenseNameBuilder.toString();
                     }
                 }
             }
+        }
 
-            // If no name is found fall back to groupId:artifactId
+        // Try fall-back match for name & license, hitting this implies the resolved license was
+        // an all-versions match
+        if (resolvedLicense != null && (licenseName == null || name == null)) {
+            final ArtifactLicense artifactLicense = resolvedLicense.getArtifactLicense();
             if (name == null) {
-                name = artifact.getGroupId() + ":" + artifact.getArtifactId();
+                name = StringUtils.trimToNull(artifactLicense.getName());
             }
-
-            // Record the artifact resolution outcome
             if (licenseName == null) {
-                this.unresolvedArtifacts.add(artifact);
-            } else {
-                this.resolvedLicenses.add(
-                        new ArtifactLicenseInfo(
-                                name,
-                                licenseName,
-                                node.getArtifact().getScope(),
-                                hasOptionalLicense(node)));
+                if (artifactLicense != null) {
+                    licenseName = StringUtils.trimToNull(artifactLicense.getLicense());
+                }
             }
+        }
+
+        // If no name is found fall back to groupId:artifactId
+        if (name == null) {
+            name = artifact.getGroupId() + ":" + artifact.getArtifactId();
+        }
+
+        // Record the artifact resolution outcome
+        if (licenseName == null) {
+            this.unresolvedArtifacts.add(artifact);
+        } else {
+            this.resolvedLicenses.add(
+                    new ArtifactLicenseInfo(
+                            name,
+                            licenseName,
+                            node.getArtifact().getScope(),
+                            hasOptionalLicense(node)));
         }
         return true;
     }

@@ -24,7 +24,7 @@
   <artifactId>notice</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>Notice Plugin Test</name>
+  <name>Notice Test</name>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -51,9 +51,9 @@
         <groupId>org.jasig.maven</groupId>
         <artifactId>notice-maven-plugin</artifactId>
         <configuration>
-          <project implementation="org.jasig.maven.notice.stubs.NoticeStub"/>
+<!--          <project implementation="org.jasig.maven.notice.stubs.NoticeStub"/>-->
           <licenseLookup>
-            <param>../license-lookup.xml</param>
+            <param>license-mappings.xml</param>
           </licenseLookup>
         <!-- 
           <outputDirectory>target/test-harness/license</outputDirectory>

@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
@@ -29,10 +31,8 @@ import org.jasig.maven.notice.util.ResourceFinder;
  *
  * @author Eric Dalquist
  * @version $Revision$
- * @goal generate
- * @threadSafe true
- * @requiresDependencyCollection test
  */
+@Mojo(name = "generate", threadSafe = true, requiresDependencyCollection = ResolutionScope.TEST)
 public class GenerateNoticeMojo extends AbstractNoticeMojo {
 
     @Override

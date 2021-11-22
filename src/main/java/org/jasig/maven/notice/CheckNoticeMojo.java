@@ -37,6 +37,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.jasig.maven.notice.util.ResourceFinder;
 
 /**
@@ -44,10 +46,8 @@ import org.jasig.maven.notice.util.ResourceFinder;
  *
  * @author Eric Dalquist
  * @version $Revision$
- * @goal check
- * @threadSafe true
- * @requiresDependencyCollection test
  */
+@Mojo(name = "check", threadSafe = true, requiresDependencyCollection = ResolutionScope.TEST)
 public class CheckNoticeMojo extends AbstractNoticeMojo {
 
     @Override

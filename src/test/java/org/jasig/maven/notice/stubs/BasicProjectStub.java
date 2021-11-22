@@ -157,7 +157,7 @@ public abstract class BasicProjectStub extends MavenProjectStub {
     public List<ArtifactRepository> getRemoteArtifactRepositories() {
         ArtifactRepository repository =
                 new DefaultArtifactRepository(
-                        "central", "http://repo1.maven.org/maven2", new DefaultRepositoryLayout());
+                        "central", "https://repo1.maven.org/maven2", new DefaultRepositoryLayout());
 
         return Collections.singletonList(repository);
     }
