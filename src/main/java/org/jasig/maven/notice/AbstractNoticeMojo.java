@@ -39,21 +39,29 @@ import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactCollector;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
-import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.jasig.maven.notice.lookup.ArtifactLicense;
 import org.jasig.maven.notice.lookup.LicenseLookup;
 import org.jasig.maven.notice.lookup.MappedVersion;
 import org.jasig.maven.notice.util.ResourceFinder;
 import org.jasig.maven.notice.util.ResourceFinderImpl;
+
+import org.apache.maven.plugins.annotations.Component;
 
 /**
  * Common base mojo for notice related plugins
@@ -66,170 +74,148 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
 
     /**
      * The Maven Project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
      */
+    @Parameter( defaultValue = "${project}", required = true, readonly = true)
     protected MavenProject project;
 
     /**
-     * The dependency tree builder to use.
-     *
-     * @component
-     * @required
-     * @readonly
+     * The dependency graph builder to use.
      */
-    protected DependencyTreeBuilder dependencyTreeBuilder;
+    @Component( hint = "default" )
+    private DependencyGraphBuilder dependencyGraphBuilder;
 
     /**
      * The artifact repository to use.
-     *
-     * @parameter expression="${localRepository}"
-     * @required
-     * @readonly
      */
+    @Parameter(required = true, readonly = true, property = "localRepository")
     protected ArtifactRepository localRepository;
 
     /**
      * The artifact factory to use.
-     *
-     * @component
-     * @required
-     * @readonly
      */
+    @Component
     protected ArtifactFactory artifactFactory;
 
     /**
      * The artifact metadata source to use.
-     *
-     * @component
-     * @required
-     * @readonly
      */
+    @Component
     protected ArtifactMetadataSource artifactMetadataSource;
 
     /**
      * The artifact collector to use.
-     *
-     * @component
-     * @required
-     * @readonly
      */
+    @Component
     protected ArtifactCollector artifactCollector;
 
     /**
      * Maven Project Builder component.
-     *
-     * @component
-     * @required
-     * @readonly
      */
+    @Component
     protected MavenProjectBuilder mavenProjectBuilder;
 
+    @Parameter ( defaultValue = "${repositorySystem}" )
+    RepositorySystem repoSystem;
+
+    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    private MavenSession session;
+
+    @Parameter( defaultValue = "${repositorySystemSession}" )
+    private RepositorySystemSession repoSession;
     /* Mojo Configuration Properties */
 
     /**
-     * Use licenseMapping
-     *
-     * @parameter
+     * Use licenseMapping.
      * @deprecated use licenseMapping
      */
+    @Parameter
     @Deprecated protected String[] licenseLookup = new String[0];
 
     /**
      * Parameter to skip running checks entirely.
-     *
-     * @parameter expression="${skip.checks}"
      */
+    @Parameter( property = "skip.checks")
     private boolean skipChecks = false;
 
     /**
      * License Mapping XML files / URLs. Lookups are done in-order with files being checked top to
-     * bottom for matches
+     * bottom for matches.
      *
-     * @parameter
      */
+    @Parameter
     protected String[] licenseMapping = new String[0];
 
     /**
-     * Template for NOTICE file generation
-     *
-     * @parameter default-value="NOTICE.template"
+     * Template for NOTICE file generation.
      */
+    @Parameter( defaultValue = "NOTICE.template")
     protected String noticeTemplate = "NOTICE.template";
 
     /**
-     * Placeholder string in the NOTICE template file
-     *
-     * @parameter default-value="#GENERATED_NOTICES#"
+     * Placeholder string in the NOTICE template file.
      */
+    @Parameter( defaultValue = "#GENERATED_NOTICES#")
     protected String noticeTemplatePlaceholder = "#GENERATED_NOTICES#";
 
     /**
      * List of scopes, like "compile", "test", etc. If specified, only dependencies with these
      * scopes will be listed in the NOTICE file.
-     *
-     * @parameter
      */
+    @Parameter
     protected Set<String> includeScopes = new TreeSet<String>();
 
     /**
      * List of scopes, like "compile", "test", etc. If specified, dependencies with these scopes
      * will be omitted from the NOTICE file.
-     *
-     * @parameter
      */
+    @Parameter
     protected Set<String> excludeScopes = new TreeSet<String>();
 
     /**
-     * Output location for the generated NOTICE file
-     *
-     * @parameter default-value="${basedir}"
+     * Output location for the generated NOTICE file.
      */
+    @Parameter( defaultValue = "${basedir}")
     protected String outputDir = "";
 
     /**
-     * Output file name
-     *
-     * @parameter default-value="NOTICE"
+     * Output file name.
      */
+    @Parameter( defaultValue = "NOTICE")
     protected String fileName = "NOTICE";
 
-    /** @parameter default-value="${project.build.sourceEncoding}" */
+    /**
+     * Output file encoding.
+     */
+    @Parameter( defaultValue = "${project.build.sourceEncoding}")
     protected String encoding = "UTF-8";
 
     /**
      * Set if the NOTICE file should include all dependencies from all child modules.
-     *
-     * @parameter default-value="true"
      */
+    @Parameter( defaultValue = "true")
     protected boolean includeChildDependencies = true;
 
     /**
-     * Set if a NOTICE file should be generated for each child module
-     *
-     * @parameter default-value="true"
+     * Set if a NOTICE file should be generated for each child module.
      */
+    @Parameter( defaultValue = "true")
     protected boolean generateChildNotices = true;
 
     /**
-     * The {@link MessageFormat} syntax string used to generate each license line in the NOTICE file
+     * The {@link MessageFormat} syntax string used to generate each license line in the NOTICE file.
      * <br>
      * {0} - artifact name<br>
      * {1} - license name<br>
-     *
-     * @parameter default-value="  {0} under {1}"
      */
+    @Parameter( defaultValue = "  {0} under {1}")
     protected String noticeMessage = "  {0} under {1}";
 
     private MessageFormat parsedNoticeMessage;
 
     /**
-     * ArtifactIds of child modules to exclude
-     *
-     * @parameter
+     * ArtifactIds of child modules to exclude.
      */
+    @Parameter
     protected Set<String> excludedModules = new LinkedHashSet<String>();
 
     /**
@@ -242,9 +228,8 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
      *   <li>However, if B were to be explicitly declared as a non-optional dependency in your pom,
      *       then it would be included.
      * </ul>
-     *
-     * @parameter
      */
+    @Parameter
     protected boolean excludeOptional;
 
     /* (non-Javadoc)
@@ -278,7 +263,7 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         final LicenseLookupHelper licenseLookupHelper =
                 new LicenseLookupHelper(logger, finder, licenseMapping);
 
-        final List<?> remoteArtifactRepositories = project.getRemoteArtifactRepositories();
+        final List<ArtifactRepository> remoteArtifactRepositories = project.getRemoteArtifactRepositories();
 
         final LicenseResolvingNodeVisitor visitor =
                 new LicenseResolvingNodeVisitor(
@@ -544,14 +529,13 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     protected DependencyNode loadDependencyTree(MavenProject project)
             throws MojoExecutionException {
         try {
-            return this.dependencyTreeBuilder.buildDependencyTree(
-                    project,
-                    this.localRepository,
-                    this.artifactFactory,
-                    this.artifactMetadataSource,
-                    null,
-                    this.artifactCollector);
-        } catch (DependencyTreeBuilderException e) {
+
+            ProjectBuildingRequest buildingRequest =
+                    new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+            buildingRequest.setProject(project);
+
+            return this.dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
+        } catch (DependencyGraphBuilderException e) {
             throw new MojoExecutionException(
                     "Cannot build project dependency tree for project: " + project, e);
         }

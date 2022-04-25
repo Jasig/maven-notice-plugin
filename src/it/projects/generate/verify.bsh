@@ -1,0 +1,38 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
+
+File actualNoticeFile = new File( basedir, "NOTICE" );
+File expectedNoticeFile = new File( basedir, "NOTICE.expected" );
+
+if ( !actualNoticeFile.isFile() ) {
+    throw new Exception( "'NOTICE' file was not created: " + actualNoticeFile );
+}
+
+String actualContent = new String( Files.readAllBytes( actualNoticeFile.toPath() ), StandardCharsets.UTF_8 );
+String expectedContent = new String( Files.readAllBytes( expectedNoticeFile.toPath() ), StandardCharsets.UTF_8 );
+
+if ( !expectedContent.equals(actualContent) ) {
+    throw new Exception( "Generated file: '" + actualNoticeFile + "' does not match the expected file: '" + expectedNoticeFile + "'. To see the differences run: diff "+ actualNoticeFile + " " + expectedNoticeFile );
+}
+
+return true;
