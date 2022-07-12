@@ -30,7 +30,7 @@
 
     <groupId>org.jasig.maven</groupId>
     <artifactId>notice-maven-plugin</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0</version>
     <packaging>maven-plugin</packaging>
 
     <name>NOTICE Generation Maven Plugin</name>
@@ -47,7 +47,7 @@
         <connection>scm:git:git://github.com/Jasig/maven-notice-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:Jasig/maven-notice-plugin.git</developerConnection>
         <url>https://github.com/Jasig/maven-notice-plugin</url>
-        <tag>HEAD</tag>
+        <tag>notice-maven-plugin-2.0.0</tag>
     </scm>
 
     <properties>
