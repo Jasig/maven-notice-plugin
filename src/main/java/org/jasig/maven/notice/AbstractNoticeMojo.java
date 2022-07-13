@@ -292,14 +292,30 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         this.handleNotice(finder, noticeContents);
     }
 
-    /** Called with the expected NOTICE file contents for this project. */
+    /*
+     * Called with the expected NOTICE file contents for this project.
+     * 
+     * @param finder
+     * 
+     * @param noticeContents
+     * 
+     * @throws MojoFailureException
+     */
     protected abstract void handleNotice(ResourceFinder finder, String noticeContents)
             throws MojoFailureException;
 
     /**
-     * Loads the dependency tree for the project via {@link #loadDependencyTree(MavenProject)} and
-     * then uses the {@link DependencyNodeVisitor} to load the license data. If {@link #aggregating}
+     * Loads the dependency tree for the project via
+     * {@link #loadDependencyTree(MavenProject)} and
+     * then uses the {@link DependencyNodeVisitor} to load the license data. If
+     * {@link #includeChildDependencies}
      * is enabled the method recurses on each child module.
+     * 
+     * @param project MavenProject
+     * @param visitor DependencyNodeVisitor
+     * 
+     * @throws MojoExecutionException exception
+     * @throws MojoFailureException exception
      */
     @SuppressWarnings("unchecked")
     protected void parseProject(MavenProject project, DependencyNodeVisitor visitor)
@@ -332,7 +348,14 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         }
     }
 
-    /** Check if a project is excluded based on its artifactId or a parent's artifactId */
+    /*
+     * Check if a project is excluded based on its artifactId or a parent's
+     * artifactId
+     * 
+     * @param mavenProject MavenProject
+     * 
+     * @param rootArtifactId String
+     */
     protected boolean isExcluded(MavenProject mavenProject, String rootArtifactId) {
         final Log logger = this.getLog();
 
@@ -364,8 +387,13 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     }
 
     /**
-     * Check if there are any unresolved artifacts in the Set. If there are print a helpful error
+     * Check if there are any unresolved artifacts in the Set. If there are print a
+     * helpful error
      * message and then throw a {@link MojoFailureException}
+     * 
+     * @param unresolvedArtifacts Set of Artifact
+     * 
+     * @throws MojoFailureException exception
      */
     protected void checkUnresolved(Set<Artifact> unresolvedArtifacts) throws MojoFailureException {
         final Log logger = this.getLog();
@@ -420,7 +448,13 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
                 "Failed to find Licenses for " + unresolvedArtifacts.size() + " artifacts");
     }
 
-    /** Create the generated part of the NOTICE file based on the resolved license data */
+    /**
+     * Create the generated part of the NOTICE file based on the resolved license
+     * data
+     * 
+     * @param resolvedLicenses Set of ArtifactLicenseInfo
+     * @return String the generated notice lines
+     */
     protected String generateNoticeLines(Set<ArtifactLicenseInfo> resolvedLicenses) {
         final StringBuilder builder = new StringBuilder();
 
@@ -453,7 +487,11 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         return builder.toString();
     }
 
-    /** Get the {@link MessageFormat} of the configured {@link #noticeMessage} */
+    /**
+     * Get the {@link MessageFormat} of the configured {@link #noticeMessage}
+     * 
+     * @return MessageFormat the Notice Message Format
+     */
     protected final MessageFormat getNoticeMessageFormat() {
         final MessageFormat messageFormat;
         synchronized (this) {
@@ -467,11 +505,17 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
     }
 
     /**
-     * Read the template notice file into a string, converting the line ending to the current OS
+     * Read the template notice file into a string, converting the line ending to
+     * the current OS
      * line endings
+     * 
+     * @param finder ResourceFinder
+     * @throws MojoFailureException exception
+     * @return String the Notice Template Content
      */
     protected String readNoticeTemplate(ResourceFinder finder) throws MojoFailureException {
         final URL inputFile = finder.findResource(this.noticeTemplate);
+
 
         final StringBuilder noticeTemplateContents = new StringBuilder();
         InputStream inputStream = null;
@@ -498,7 +542,11 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         return noticeTemplateContents.toString();
     }
 
-    /** Resolve the {@link File} to write the generated NOTICE file to */
+    /**
+     * Resolve the {@link File} to write the generated NOTICE file to
+     * 
+     * @return File the generated NOTICE file
+     */
     protected File getNoticeOutputFile() {
         if (this.outputDir == null) {
             this.outputDir = "";
@@ -511,7 +559,13 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         return new File(outputPath, this.fileName);
     }
 
-    /** Create the {@link ResourceFinderImpl} for the project */
+    /**
+     * Create the {@link ResourceFinderImpl} for the project
+     *
+     * @throws MojoExecutionException exception
+     * 
+     * @return ResourceFinder The project ressources
+     */
     @SuppressWarnings("unchecked")
     protected ResourceFinder getResourceFinder() throws MojoExecutionException {
         final ResourceFinder finder = new ResourceFinderImpl(this.project);
@@ -525,7 +579,15 @@ public abstract class AbstractNoticeMojo extends AbstractMojo {
         return finder;
     }
 
-    /** Load the dependency tree for the specified project */
+    /**
+     * Load the dependency tree for the specified project
+     * 
+     * @param project MavenProject
+     * 
+     * @throws MojoExecutionException exception
+     * 
+     * @return DependencyNode the dependency tree for the specified project
+     */
     protected DependencyNode loadDependencyTree(MavenProject project)
             throws MojoExecutionException {
         try {
