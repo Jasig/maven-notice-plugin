@@ -1,6 +1,6 @@
 # notice-maven-plugin
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jasig.maven/maven-notice-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.jasig.maven/maven-notice-plugin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jasig.maven/notice-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.jasig.maven/notice-maven-plugin)
 [![Build Status](https://travis-ci.org/Jasig/maven-notice-plugin.svg?branch=master)](https://travis-ci.org/Jasig/maven-notice-plugin)
 
 Generates NOTICE files based on a given template. Defaults to Apereo copyright.
